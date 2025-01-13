@@ -2,7 +2,7 @@
 主要著重於Gemini API,如何將大語言模型導入至目前的專案中
 
 ## Gemini API
-- [生成文字](./text_generation)
+- [生成文字](./Gemini/text_generation)
 
 ## OpenAI API
 
