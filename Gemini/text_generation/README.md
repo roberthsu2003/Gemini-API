@@ -263,7 +263,7 @@ display(Markdown(response.text))
 
 
 ## 範例
-- 旅遊計畫(./tripPlanner.ipynb)
+- [旅遊計畫](./tripPlanner.ipynb)
 
 
 
