@@ -150,7 +150,53 @@ for chunk in response:
 Gemini SDK 可讓您收集多輪問題和答复，從而讓用戶逐步獲得答案或獲得多部分問題的幫助。此 SDK 功能提供了一個介面來追蹤對話歷史記錄，但在背景使用相同的 generateContent 方法來建立回應。
 
 ```python
+import google.generativeai as genai
+import os
+from IPython.display import display, Markdown, Latex
 
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel("gemini-2.0-flash-exp")
+chat = model.start_chat(
+    history=[
+        {'role':'user', "parts":"您好"},
+        {'role':'model',"parts":"有什麼是您想知道的?"}
+    ]
+)
+
+response1 = chat.send_message("我有2隻狗在我的房子內")
+display(Markdown(response1.text))
+
+response2 = chat.send_message('在我家裏有多少爪子?')
+display(Markdown(response2.text))
+```
+
+
+### 調整回應文字
+
+您發送給模型的每個提示都包含控制模型如何產生回應的參數。您可以使用 GenerationConfig 來設定這些參數。如果不配置參數，模型將使用預設選項，這可能會因模型而異。
+
+```
+import google.generativeai as genai
+import os
+from IPython.display import display, Markdown, Latex
+
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel('gemini-2.0-flash-exp')
+response = model.generate_content(
+    "說明AI如何工作",
+    generation_config=genai.GenerationConfig(
+        temperature=0, # 確定性輸出（無隨機性）
+        top_p=0.95, # 機率採樣閾值
+        top_k=20,  #考慮的最高機率詞彙數
+        candidate_count=1,  # 生成一個回答
+        max_output_tokens=100, # 最大輸出長度
+        stop_sequences=["STOP!"], # 停止序列
+        presence_penalty=0.0, # 控制重複內容的懲罰
+        frequency_penalty=0.0, # 控制詞頻的懲罰
+    )
+)
+
+display(Markdown(response.text))
 ```
 
 ## 相關的參數
@@ -193,6 +239,32 @@ top_k較高(如100或更多):模型考慮更多的候選詞,這可以增加文�
 ### candidate_count
 
 生成回答的數量
+
+
+## 增加系統命令
+
+統指令讓您可以根據特定需求和用例來控制模型的行為。
+
+```python
+import google.generativeai as genai
+import os
+from IPython.display import display, Markdown, Latex
+
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel(
+    'gemini-2.0-flash-exp',
+     system_instruction = "你是一隻貓,你的名字叫Neko."
+    )
+
+response = model.generate_content('早安,您好嗎')
+display(Markdown(response.text))
+
+```
+
+
+## 範例
+- 旅遊計畫(./tripPlanner.ipynb)
+
 
 
 
