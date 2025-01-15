@@ -121,6 +121,90 @@ json_structure
 
 在某些情況下，您可能希望模型從選項清單中選擇選項。為了實現此行為，您可以在配置設定中傳遞一個列舉。您可以在 response_schema 中任何地方使用列舉,列舉實際上是字串清單。
 
+```python
+import google.generativeai as genai
+import enum
+import os
+
+
+
+class Choice(enum.Enum):
+    PERCUSSION = "Percussion"
+    STRING = "String"
+    WOODWIND = "Woodwind"
+    BRASS = "Brass"
+    KEYBOARD = "Keyboard"
+
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel("gemini-2.0-flash-exp")
+organ = genai.upload_file('organ.jpg')
+result = model.generate_content(
+    ['What kind of instrument is this:',organ],
+    generation_config=genai.GenerationConfig(
+        response_mime_type="text/x.enum",
+        response_schema=Choice
+    )
+)
+print(result.text)
+
+```
+
+### 使用dict代替例舉
+
+```
+import google.generativeai as genai
+import enum
+import os
+
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel("gemini-2.0-flash-exp")
+organ = genai.upload_file('organ.jpg')
+result = model.generate_content(
+    ['What kind of instrument is this:',organ],
+    generation_config=genai.GenerationConfig(
+        response_mime_type="text/x.enum",
+        response_schema={
+            'type': 'STRING',
+            'enum':["Percussion", "String", "Woodwind", "Brass", "Keyboard"]
+        }
+    )
+)
+print(result.text)
+
+```
+
+### 整合json schema 和 enum的應用
+
+```
+import google.generativeai as genai
+from typing_extensions import TypedDict
+import enum
+
+class Grade(enum.Enum):
+    A_PLUS = "a+"
+    A = "a"
+    B = "b"
+    C = "c"
+    D = "d"
+    F = "f"
+
+class Recipe(TypedDict):
+    recipe_name:str
+    grade:Grade
+
+model = genai.GenerativeModel("gemini-2.0-flash-exp")
+result = model.generate_content(
+    "List about 10 cookie recipes, grade them based on popularity",
+    generation_config=genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=list[Recipe]
+    )
+)
+print(result.text)
+```
+
+
+
 
 
 
