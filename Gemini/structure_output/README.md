@@ -21,4 +21,107 @@ Gemini 預設產生非結構化文本，但某些應用程式需要結構化文�
 
 ### prompt中提供json文字的描素
 
+- **使用英文**
+
+```
+import google.generativeai as genai
+import os
+import json
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel('gemini-2.0-flash-exp')
+prompt = """List a few popular cookie recipes in JSON format.
+
+Use this JSON schema:
+
+Recipe = {'recipe_name':str, 'ingredients':list[str]}
+Return: list[Recipe]"""
+
+result = model.generate_content(prompt)
+json_str:str = result.text.replace('```json','') #去除最前面的一行
+json_str = json_str.replace('```','') #去除最後面的一行
+json_structure:list[dict] = json.loads(json_str) #轉換成資料結構
+json_structure
+```
+
+- **使用中文**
+
+```
+import google.generativeai as genai
+import os
+import json
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel('gemini-2.0-flash-exp')
+prompt = """最常見的5種中式料理食譜,請條列式的方法列出食材,並使用json的格式輸出
+
+Use this JSON schema:
+
+Recipe = {'recipe_name':str, 'ingredients':list[str]}
+Return: list[Recipe]"""
+
+result = model.generate_content(prompt)
+json_str:str = result.text.replace('```json','') #去除最前面的一行
+json_str = json_str.replace('```','') #去除最後面的一行
+json_structure:list[dict] = json.loads(json_str) #轉換成資料結構
+json_structure
+```
+
+### 提供json schema給model配置(比較精準)
+
+**英文**
+
+```
+import google.generativeai as genai
+import typing_extensions as typing
+import os
+import json
+
+class Recipe(typing.TypedDict):
+    recipe_name:str
+    ingredients:list[str]
+
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel('gemini-1.5-flash')
+result = model.generate_content(
+    'List a few popular cookie recipes.',
+    generation_config=genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=list[Recipe]
+    )
+)
+json_structure = json.loads(result.text)
+json_structure
+```
+
+**中文**
+
+```python
+import google.generativeai as genai
+import typing_extensions as typing
+import os
+import json
+
+class Recipe(typing.TypedDict):
+    recipe_name:str
+    ingredients:list[str]
+
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel('gemini-1.5-flash')
+result = model.generate_content(
+    '最常見的5種中式料理食譜,請條列式的方法列出食材和食材的份量,並使用json的格式輸出,請使用繁體中文',
+    generation_config=genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=list[Recipe]
+    )
+)
+json_structure = json.loads(result.text)
+json_structure
+```
+
+### 使用列舉(enum)限定結果輸出
+
+在某些情況下，您可能希望模型從選項清單中選擇選項。
+
+
+
+
 
