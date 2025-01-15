@@ -6,6 +6,7 @@
 ## Gemini API
 - [生成文字](./Gemini/text_generation)
 - [結構化輸出](./Gemini/structure_output)
+- [產生程式碼](./Gemini/code_execution)
 
 ## OpenAI API
 
