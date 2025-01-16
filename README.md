@@ -7,6 +7,9 @@
 - [生成文字](./Gemini/text_generation)
 - [結構化輸出](./Gemini/structure_output)
 - [產生程式碼](./Gemini/code_execution)
+- [函式呼叫](./Gemini/function_calling)
+	- function calling
+	- function 
 
 ## OpenAI API
 
