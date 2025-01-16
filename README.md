@@ -8,8 +8,12 @@
 - [結構化輸出](./Gemini/structure_output)
 - [產生程式碼](./Gemini/code_execution)
 - [函式呼叫](./Gemini/function_calling)
-	- function calling
-	- function 
+	- 自動呼叫
+	- 手動呼叫
+	- 鍊結呼叫
+	- 平行呼叫
+\
+
 
 ## OpenAI API
 
