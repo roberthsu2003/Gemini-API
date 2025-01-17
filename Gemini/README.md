@@ -28,5 +28,6 @@ ipywidgets
 - [手動管理函式呼叫](./function_calling/manual_function_calling.ipynb)
 - [鍊結呼叫(依順序呼叫多個function)](./function_calling/function_calling_chain.ipynb)
 - [平行呼叫(同時呼叫)](./function_calling/parallel_function_call.ipynb)
+- [從結構資料中截取資料](./function_calling/extract_structured_data.ipynb)
 
 
