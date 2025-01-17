@@ -22,7 +22,7 @@ ipywidgets
 - [結構化輸出](./structure_output)
 - [產生程式碼](./code_execution)
 - [函式呼叫](./function_calling)
-	- [最簡單的呼叫](./simple_sample.ipynb)
+	- [最簡單的呼叫](./function_calling/simple_sample.ipynb)
 	- 手動呼叫
 	- 鍊結呼叫
 	- 平行呼叫
