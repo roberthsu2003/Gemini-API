@@ -3,7 +3,7 @@
 
 ## [何謂AI Agent](./何謂AIAgent)
 
-## Gemini API(./Gemini)
+## [Gemini API](./Gemini)
 
 ## OpenAI API
 
