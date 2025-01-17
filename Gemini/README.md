@@ -6,7 +6,7 @@
 
 ## 說明文件
 
-![參考網址](https://github.com/googleapis/python-genai?tab=readme-ov-file)
+[參考網址](https://github.com/googleapis/python-genai?tab=readme-ov-file)
 
 ## 套件需求
 - requirements.txt
