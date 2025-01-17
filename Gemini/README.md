@@ -30,4 +30,7 @@ ipywidgets
 - [平行呼叫(同時呼叫)](./function_calling/parallel_function_call.ipynb)
 - [從結構資料中截取資料](./function_calling/extract_structured_data.ipynb)
 
+## 5. Embedings
+- [文件內容搜尋](./embeddings/document_search.ipynb)
+
 
