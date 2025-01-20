@@ -7,7 +7,5 @@
 
 ## [Gemini API](./Gemini)
 
-## OpenAI API
-
-## Claud API
+## [ChromaDB向量資料庫](./chromaDB)
 
