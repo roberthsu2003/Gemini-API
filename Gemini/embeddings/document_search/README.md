@@ -1,7 +1,7 @@
-| 任務類型 | 說明 |
-|:--|:--|
-| RETRIEVAL_QUERY | Specifies the given text is a query in a search/retrieval setting. |
-| RETRIEVAL_DOCUMENT | Specifies the given text is a document in a search/retrieval setting. |
-| SEMANTIC_SIMILARITY | Specifies the given text will be used for Semantic Textual Similarity (STS). |
-| CLASSIFICATION | Specifies that the embeddings will be used for classification. |
-| CLUSTERING | Specifies that the embeddings will be used for clustering. |
+## 語意搜尋
+### 使用gemini內提供的models/text-embedding-004建立的embedding
+**注意不適合建立繁體中文語意搜尋,但適合英文的語意**
+- [最簡單的範例](./document_search.ipynb)
+- [使用csv檔](./document_search1.ipynb)
+
+### [適合繁體中文的embedding模型評估表](./Embeddings模型評測.xlsx)
