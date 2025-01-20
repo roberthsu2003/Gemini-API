@@ -31,6 +31,6 @@ ipywidgets
 - [從結構資料中截取資料](./function_calling/extract_structured_data.ipynb)
 
 ## 5. Embedings
-- [文件內容搜尋](./embeddings/document_search.ipynb)
+- [文件內容搜尋](./embeddings/document_search)
 
 
