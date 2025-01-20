@@ -33,4 +33,3 @@ ipywidgets
 ## 5. Embedings
 - [文件內容搜尋](./embeddings/document_search)
 
-
