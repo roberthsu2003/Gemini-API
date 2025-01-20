@@ -8,3 +8,4 @@ transformers
 torch
 scikit-learn
 chromadb
+gradio
