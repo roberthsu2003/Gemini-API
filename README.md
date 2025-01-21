@@ -3,8 +3,6 @@
 
 ## [何謂AI Agent](./何謂AIAgent)
 
-## [ChromaDB向量資料庫](./chromaDB)
-
 ## 官方測試使用網站
 
 [Google AI Studio](https://aistudio.google.com/prompts/new_chat)
