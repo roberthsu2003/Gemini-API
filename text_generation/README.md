@@ -27,7 +27,7 @@ display(Markdown(response.text))
 我是一個大型語言模型，由 Google 訓練。我沒有名字。
 ```
 
-**整合gradio介面**
+**zero-shot整合gradio介面**
 
 ```python
 import google.generativeai as genai
@@ -62,7 +62,8 @@ demo.launch()
 
 ![](./images/pic1.png)
 
-**zero-shot方式**
+**zero-shot generation方式**
+- 可以使用上面範例完成
 這些提示不包含讓模型複製的範例。Zero-shot 提示基本上顯示模型在沒有任何額外例子或資訊的情況下完成提示的能力。這意味著模型必須依賴已有的知識來產生一個可信的答案。
 
 ```
@@ -103,8 +104,9 @@ demo.launch()
 強大的。它們非常美麗，而且對生態系統非常重要。
 ```
 
-**整合gradio介面**
-- 和上面的程式碼相同
+**text-to-summarization and translate 整合gradio介面**
+**有包含system instruction**
+- [日本公開文章](https://www.aozora.gr.jp/index_pages/person_a.html)
 
 ![](./images/pic2.png)
 
