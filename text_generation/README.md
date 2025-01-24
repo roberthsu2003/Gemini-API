@@ -27,6 +27,41 @@ display(Markdown(response.text))
 我是一個大型語言模型，由 Google 訓練。我沒有名字。
 ```
 
+**整合gradio介面**
+
+```python
+import google.generativeai as genai
+import os
+import gradio as gr
+
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+model = genai.GenerativeModel("gemini-2.0-flash-exp")
+
+with gr.Blocks(title="Example") as demo:
+    gr.Markdown("# Zero-shot Text Generation")
+    
+    input_text = gr.Textbox(
+        label="prompt",
+        placeholder="請輸入問題",
+        submit_btn=True
+        )
+    with gr.Accordion("**懶的輸入可以點選以下問題**",open=False):
+        gr.Examples(
+            examples=["請問台灣的首都是哪裡？", "請問台灣的國土面積有多大？", "請問台灣的人口有多少？"], 
+            label="問題範例",
+            inputs=input_text)
+    output_text = gr.Markdown()
+
+    @input_text.submit(inputs=input_text, outputs=[input_text,output_text])
+    def generate_text(input_str:str):
+        response = model.generate_content(input_str)
+        return (None, f"## {input_str}\n" + response.text)
+
+demo.launch()
+```
+
+![](./images/pic1.png)
+
 **zero-shot方式**
 這些提示不包含讓模型複製的範例。Zero-shot 提示基本上顯示模型在沒有任何額外例子或資訊的情況下完成提示的能力。這意味著模型必須依賴已有的知識來產生一個可信的答案。
 
@@ -68,17 +103,14 @@ display(Markdown(response.text))
 強大的。它們非常美麗，而且對生態系統非常重要。
 ```
 
-```python
-import google.generativeai as genai
-import os
-from IPython.display import display, Markdown, Latex
+**整合gradio介面**
+- 和上面的程式碼相同
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+![](./images/pic2.png)
 
-model = genai.GenerativeModel("gemini-2.0-flash-exp")
-response = model.generate_content("AI是如何工作的(請使用繁體中文回答)?")
-display(Markdown(response.text))
-```
+
+
+
 
 ### 文字和圖片的輸入,產生文字
 
