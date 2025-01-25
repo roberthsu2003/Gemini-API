@@ -108,7 +108,7 @@ demo.launch()
 **有包含system instruction**
 - [日本公開文章](https://www.aozora.gr.jp/index_pages/person_a.html)
 
-![](./images/pic2.png)
+![](./images/pic4.png)
 
 
 
