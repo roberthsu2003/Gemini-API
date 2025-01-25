@@ -107,6 +107,7 @@ demo.launch()
 **text-to-summarization and translate 整合gradio介面**
 **有包含system instruction**
 - [日本公開文章](https://www.aozora.gr.jp/index_pages/person_a.html)
+- [中文公開短篇小說](https://ibook.idv.tw/enews/enews/enews25.html)
 
 ![](./images/pic4.png)
 
