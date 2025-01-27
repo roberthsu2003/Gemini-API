@@ -305,6 +305,32 @@ response2 = chat.send_message('在我家裏有多少爪子?')
 display(Markdown(response2.text))
 ```
 
+**chat_gradio簡單範例**
+
+```python
+import google.generativeai as genai
+import os
+import gradio as gr
+
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+model = genai.GenerativeModel("gemini-2.0-flash-exp")
+chat = model.start_chat()
+
+def processing_chat(message, history):
+    response = chat.send_message(message)
+    return response.text
+
+demo = gr.ChatInterface(
+    fn = processing_chat,
+    type="messages"
+)
+
+demo.launch()
+```
+
+![](./images/pic6.png)
+
+
 
 ### 調整回應文字
 
