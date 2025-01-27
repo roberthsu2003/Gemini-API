@@ -9,4 +9,9 @@ torch
 scikit-learn
 chromadb
 gradio
-llama-cpp-python
+selenium
+beautifulsoup4
+lxml
+html5lib
+requests
+
