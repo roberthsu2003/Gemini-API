@@ -103,9 +103,5 @@ with gr.Blocks() as demo:
         message = [f"請將{number_value}{in_radio_value}轉換為{in_output_value}","請輸出為markdown格式"]
         response = model1.generate_content(message)
         return response.text
-             
-
-
-
 
 demo.launch()
