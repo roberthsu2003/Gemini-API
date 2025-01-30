@@ -1,69 +1,26 @@
+## Gemini function calling(Gemini函式呼叫)
+使用Gemini API函式呼叫功能,代表可以提供一個自訂的函式給模型。模型不會直接呼叫函式,取面代之的是輸出一個滿足函式名稱和引數所需要的結構資料。然後可以使用此函式和引數值,呼叫外部的API,並將整合外部API產生的值,對model進行更進一步的查詢,這使模型可以提供更綜合的回應和做更多額外的動作
 
-**連結函式呼叫(呼叫完成後再呼叫下一個)**
+函式呼叫可讓使用者對及時資訊,資料庫,文件互動,這功能也增強模型的能力,更精準和全面的回答問題。函式呼叫非常適合用模型來操控外部的系統或外部API,如果不需要使用外部系統或外部API,建議使用code execution取代
 
-```python
-import os
-import google.generativeai as genai
+### 函式呼叫的如何工作
 
-def find_movies(description:str, location:str = "") -> list[str]:
-    """find movie titles currently playing in theaters based on any description, genre, title words, etc.
+1. 說明function的功能,目的和功能
+2. 每個參數的完整說明
+3. 傳出值的說明
 
-    Args:
-        description: Any kind of description including category or genre, title words, attributes, etc.
-        location: The city and state, e.g. San Francisco, CA or a zip code e.g. 95616
-    """
+### 最佳的範本(Best practices)
 
-    return ["Barbie", "Oppenheimer"]
+**User Prompt**
+- 提供額外的prompt給模型:
+	- 你是電影 API 助手，可以幫助用戶根據他們的喜好找到電影和放映時間。
+- 更細節的提問,當何時或如何做
+	- 不要對演出時間妄加猜測。演出時間務必使用未來的日期。
+- 如果使用者的提問是模糊的,要求使用者可清楚的提問
+	- 如果沒有足夠的資訊來完成請求，請詢問澄清問題。
 
-def find_theaters(location: str, movie: str = ""):
-    """Find theaters based on location and optionally movie title which are is currently playing in theaters.
-
-    Args:
-        location: The city and state, e.g. San Francisco, CA or a zip code e.g. 95616
-        movie: Any movie title
-    """
-    return ["Googleplex 16", "Android Theatre"]
-
-def get_showtimes(location: str, movie: str, theater: str, date: str):
-    """
-    Find the start times for movies playing in a specific theater.
-
-    Args:
-      location: The city and state, e.g. San Francisco, CA or a zip code e.g. 95616
-      movie: Any movie title
-      thearer: Name of the theater
-      date: Date for requested showtime
-    """
-    return ["10:00", "11:00"]
-
-functions = {
-    "find_movies": find_movies,
-    "find_theaters": find_theaters,
-    "get_showtimes": get_showtimes,
-}
-
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-
-model = genai.GenerativeModel(
-    model_name = 'gemini-2.0-flash-exp',
-    tools = functions.values()
-)
-
-chat = model.start_chat(enable_automatic_function_calling=True)
-response = chat.send_message(
-    "Which comedy movies are shown at tonight in Mountain view and at what time?"
-)
-
-for content in chat.history:
-    print(content.role, "->", [type(part).to_dict(part) for part in content.parts])
-    print("-" * 80)
-
-
-```
-
-
-
-### 平行呼叫
+**完整的參數說明**
+- 例如溫度參數 - 要求最低的值和最高的值
 
 
 
