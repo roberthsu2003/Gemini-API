@@ -21,9 +21,10 @@ ipywidgets
 ```
 
 ## 1. [生成文字](./text_generation)
-## 2. [結構化輸出](./structure_output)
-## 3. [產生程式碼](./code_execution)
-## 4. [函式呼叫](./function_calling)
+## 2. [讀取文件](./document_understanding)
+## 3. [結構化輸出](./structure_output)
+## 4. [產生程式碼](./code_execution)
+## 5. [函式呼叫](./function_calling)
 - [最簡單的呼叫](./function_calling/simple_sample.ipynb)	
 - [多個函式的使用](./function_calling/multiFunction.ipynb)
 - [ChatSession.history](./function_calling/history.ipynb)
@@ -32,10 +33,10 @@ ipywidgets
 - [平行呼叫(同時呼叫)](./function_calling/parallel_function_call.ipynb)
 - [從結構資料中截取資料](./function_calling/extract_structured_data.ipynb)
 
-## 5. Embedings
+## 6. Embedings
 - [文件內容搜尋](./embeddings/document_search)
 
-## 6. [開源模型](./開源模型)
+## 7. [開源模型](./開源模型)
 
 
 
