@@ -25,7 +25,8 @@ ipywidgets
 ## 3. [結構化輸出](./structure_output)
 ## 4. [產生程式碼](./code_execution)
 ## 5. [函式呼叫](./function_calling)
-- [最簡單的呼叫](./function_calling/simple_sample.ipynb)	
+- [最簡單的呼叫](./function_calling/simple_sample.ipynb)
+	- gradio範例1	
 - [多個函式的使用](./function_calling/multiFunction.ipynb)
 - [ChatSession.history](./function_calling/history.ipynb)
 - [手動管理函式呼叫](./function_calling/manual_function_calling.ipynb)

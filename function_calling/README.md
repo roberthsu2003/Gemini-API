@@ -9,6 +9,12 @@
 2. 每個參數的完整說明
 3. 傳出值的說明
 
+### 注意事項
+1. 使用generate_content,model不會去執行function,只會取得參數值,必需手動取得參數值,再自已呼叫,也不會有text的回覆
+2. 使用send_message(),model可以自已去執行function,也會取得參數值,也有return值,再透過return,model自動修飾response.text的值。
+
+
+
 ### 最佳的範本(Best practices)
 
 **User Prompt**
