@@ -36,14 +36,17 @@ ipywidgets
 
 ```python
 from google import genai
+import os
+from IPython.display import display, Markdown, Latex
 
-# The client gets the API key from the environment variable `GEMINI_API_KEY`.
-client = genai.Client()
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash", contents="Explain how AI works in a few words"
+    model="gemini-2.5-flash",
+    contents="AI是如何工作的(請使用繁體中文回答)?"
 )
-print(response.text)
+
+display(Markdown(response.text))
 ```
 
 ## 許多程式碼範例預設會開啟「思考」功能
