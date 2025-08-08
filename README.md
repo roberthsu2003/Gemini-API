@@ -66,11 +66,11 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
-## 1. [生成文字](./text_generation)
-## 2. [讀取文件](./document_understanding)
-## 3. [結構化輸出](./structure_output)
-## 4. [產生程式碼](./code_execution)
-## 5. [函式呼叫](./function_calling)
+## 1. [生成文字(未更新)](./text_generation)
+## 2. [讀取文件(未更新)](./document_understanding)
+## 3. [結構化輸出(未更新)](./structure_output)
+## 4. [產生程式碼(未更新)](./code_execution)
+## 5. [函式呼叫(未更新)](./function_calling)
 - [最簡單的呼叫](./function_calling/simple_sample.ipynb)
 	- [範例1-匯率(自動呼叫)](./function_calling/example1)
 	- [範例2-匯率(手動呼叫)](./function_calling/example2)
@@ -82,7 +82,7 @@ print(response.text)
 - [平行呼叫(同時呼叫)](./function_calling/parallel_function_call.ipynb)
 - [從結構資料中截取資料](./function_calling/extract_structured_data.ipynb)
 
-## 6. Embedings
+## 6. Embedings(未更新)
 - [文件內容搜尋](./embeddings/document_search)
 
 ## 7. [開源模型](./開源模型)
