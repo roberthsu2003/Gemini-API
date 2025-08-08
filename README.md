@@ -69,7 +69,7 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
-## 1. [生成文字(未更新)](./text_generation)
+## 1. [生成文字(未更中)](./text_generation)
 ## 2. [讀取文件(未更新)](./document_understanding)
 ## 3. [結構化輸出(未更新)](./structure_output)
 ## 4. [產生程式碼(未更新)](./code_execution)
