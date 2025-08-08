@@ -26,6 +26,46 @@ python-dotenv
 ipywidgets
 ```
 
+## 發出第一項要求
+
+以下範例使用 generateContent 方法，透過 Gemini 2.5 Flash 模型傳送要求至 Gemini API。
+
+如果您將 API 金鑰設為環境變數 GEMINI_API_KEY，使用 Gemini API 程式庫時，用戶端會自動取得該金鑰。否則，您需要在初始化用戶端時傳遞 API 金鑰做為引數。
+
+請注意，Gemini API 文件中的所有程式碼範例，都假設您已設定環境變數 GEMINI_API_KEY。
+
+```python
+from google import genai
+
+# The client gets the API key from the environment variable `GEMINI_API_KEY`.
+client = genai.Client()
+
+response = client.models.generate_content(
+    model="gemini-2.5-flash", contents="Explain how AI works in a few words"
+)
+print(response.text)
+```
+
+## 許多程式碼範例預設會開啟「思考」功能
+
+本網站上的許多程式碼範例都使用 Gemini 2.5 Flash 模型，這個模型預設啟用「思考」功能，可提升回覆品質。請注意，這可能會增加回應時間和權杖用量。如果您優先考量速度或希望盡量降低成本，可以將思考預算設為零，停用這項功能，如下列範例所示。
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client()
+
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents="Explain how AI works in a few words",
+    config=types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(thinking_budget=0) # Disables thinking
+    ),
+)
+print(response.text)
+```
+
 ## 1. [生成文字](./text_generation)
 ## 2. [讀取文件](./document_understanding)
 ## 3. [結構化輸出](./structure_output)
