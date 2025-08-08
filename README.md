@@ -11,11 +11,17 @@
 
 [參考網址](https://github.com/googleapis/python-genai?tab=readme-ov-file)
 
+## python版本需求
+
+```
+python 3.9
+```
+
 ## 套件需求
 - requirements.txt
 
 ```
-google-generativeai
+google-genai
 python-dotenv
 ipywidgets
 ```
