@@ -1,16 +1,15 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 import gradio as gr
+from dotenv import load_dotenv
 
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel(
-    "gemini-2.0-flash-exp",
-    system_instruction = """
-    你是一位文章的總結專家,也是一位繁體中文的高手。
-    你的任務是:
-    1. 請將內容`總結`
-    """
-)
+load_dotenv()
+
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+
+
 
 with gr.Blocks(title="Example") as demo:
     gr.Markdown("# Text To Summarization(總結)")
@@ -24,7 +23,6 @@ with gr.Blocks(title="Example") as demo:
 
     @input_text.submit(inputs=[style_radio,input_text], outputs=[output_md])
     def generate_text(style:str,input_str:str):
-        response = model.generate_content(input_str)
         if style=="口語化":
             style = "請使用口語化的風格\n"
         elif style == "學術":
@@ -33,7 +31,19 @@ with gr.Blocks(title="Example") as demo:
             style = "請使用商業文章的風格\n"
         elif style == "條列式":
             style = "請條列式重點\n"
+        response = client.models.generate_content(
+                                            model="gemini-2.5-flash",    
+                                            contents=[input_str],
+                                            config=types.GenerateContentConfig(
+                                                   system_instruction=f"""
+                                                   你是一位文章的總結專家,也是一位繁體中文的高手。你的任務是: 
+                                                    1. 請將內容`總結`
+                                                    2. {style}
+                                                    """
+                                                   )
+                                            )
+        
 
         return  f"{style}\n\n### 總結內容如下:\n" + response.text
 
-demo.launch()
+demo.launch(share=True)
