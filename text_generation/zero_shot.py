@@ -1,9 +1,11 @@
-import google.generativeai as genai
+from google import genai
 import os
 import gradio as gr
+from dotenv import load_dotenv
 
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-2.0-flash-exp")
+load_dotenv()
+
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 with gr.Blocks(title="Example") as demo:
     gr.Markdown("# Zero-shot Text Generation")
@@ -22,7 +24,10 @@ with gr.Blocks(title="Example") as demo:
 
     @input_text.submit(inputs=input_text, outputs=[input_text,output_text])
     def generate_text(input_str:str):
-        response = model.generate_content(input_str)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=input_str
+        )
         return (None, f"## {input_str}\n" + response.text)
 
 demo.launch()
