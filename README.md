@@ -1,94 +1,153 @@
-# GeminiAPI的應用
-主要著重於Gemini API,如何將大語言模型導入至目前的專案中
+# Gemini API 應用
 
-## [何謂AI Agent](./何謂AIAgent)
+本專案著重於 **Gemini API** 的介紹與實作，示範如何將 Google 大語言模型整合到專案中。
 
-## 官方測試使用網站
+---
 
-[Google AI Studio](https://aistudio.google.com/prompts/new_chat)
+## 環境需求
 
-## 說明文件
+- **Python**：3.9+
+- **套件**：見 [requirements.txt](./requirements.txt)  
+  核心依賴：`google-genai`、`python-dotenv`、`ipywidgets`
 
-[參考網址](https://github.com/googleapis/python-genai?tab=readme-ov-file)
+---
 
-## python版本需求
+## 快速開始
 
-```
-python 3.9
-```
+### 設定 API 金鑰
 
-## 套件需求
-- requirements.txt
-
-```
-google-genai
-python-dotenv
-ipywidgets
-```
-
-## 發出第一項要求
-
-以下範例使用 generateContent 方法，透過 Gemini 2.5 Flash 模型傳送要求至 Gemini API。
-
-如果您將 API 金鑰設為環境變數 GEMINI_API_KEY，使用 Gemini API 程式庫時，用戶端會自動取得該金鑰。否則，您需要在初始化用戶端時傳遞 API 金鑰做為引數。
-
-請注意，Gemini API 文件中的所有程式碼範例，都假設您已設定環境變數 GEMINI_API_KEY。
+將 API 金鑰設為環境變數 `GEMINI_API_KEY`，SDK 會自動讀取。或於初始化時傳入：
 
 ```python
 from google import genai
 import os
-from IPython.display import display, Markdown, Latex
+from IPython.display import display, Markdown
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 response = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents="AI是如何工作的(請使用繁體中文回答)?"
+    contents="AI 是如何工作的？（請使用繁體中文回答）"
 )
-
 display(Markdown(response.text))
 ```
 
-## 許多程式碼範例預設會開啟「思考」功能
+### 關於「思考」功能
 
-本網站上的許多程式碼範例都使用 Gemini 2.5 Flash 模型，這個模型預設啟用「思考」功能，可提升回覆品質。請注意，這可能會增加回應時間和權杖用量。如果您優先考量速度或希望盡量降低成本，可以將思考預算設為零，停用這項功能，如下列範例所示。
+Gemini 2.5 Flash 預設會啟用思考模式，有助於回答品質，但會增加延遲與 token 用量。若需追求速度或降低成本，可關閉：
 
 ```python
 from google import genai
 from google.genai import types
 
 client = genai.Client()
-
 response = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents="Explain how AI works in a few words",
+    contents="用幾句話說明 AI 如何運作",
     config=types.GenerateContentConfig(
-        thinking_config=types.ThinkingConfig(thinking_budget=0) # Disables thinking
+        thinking_config=types.ThinkingConfig(thinking_budget=0)
     ),
 )
 print(response.text)
 ```
 
-## 1. [生成文字(未更中)](./text_generation)
-## 2. [讀取文件(未更新)](./document_understanding)
-## 3. [結構化輸出(未更新)](./structure_output)
-## 4. [產生程式碼(未更新)](./code_execution)
-## 5. [函式呼叫(未更新)](./function_calling)
-- [最簡單的呼叫](./function_calling/simple_sample.ipynb)
-	- [範例1-匯率(自動呼叫)](./function_calling/example1)
-	- [範例2-匯率(手動呼叫)](./function_calling/example2)
-	- [gradio範例](./function_calling/gradio_example1)	
-- [多個函式的使用](./function_calling/multiFunction.ipynb)
+---
+
+## 官方資源
+
+- [Google AI Studio](https://aistudio.google.com/prompts/new_chat)（測試與實驗）
+- [Python SDK 說明](https://github.com/googleapis/python-genai?tab=readme-ov-file)
+
+---
+
+## 專案章節導覽
+
+| 章節 | 說明 | 路徑 |
+|------|------|------|
+| **何謂 AI Agent** | AI 代理與工作流概念 | [何謂AIAgent](./何謂AIAgent) |
+| **1. 文字生成** | 單輪/串流/多輪對話、多模態 | [text_generation](./text_generation) |
+| **2. 文件理解** | PDF 等文件讀取與分析 | [document_understanding](./document_understanding) |
+| **3. 結構化輸出** | JSON 等結構化資料產生 | [structure_output](./structure_output) |
+| **4. 程式碼執行** | 程式碼產生與執行 | [code_execution](./code_execution) |
+| **5. 函式呼叫** | Function calling 範例與應用 | [function_calling](./function_calling) |
+| **6. Embeddings** | 語意搜尋與向量檢索 | [embeddings/document_search](./embeddings/document_search) |
+| **7. 開源模型** | Hugging Face 等非 Gemini 模型範例 | [開源模型](./開源模型) |
+
+---
+
+## 1. 文字生成 (text_generation)
+
+- 單輪：`generateContent`、`streamGenerateContent`
+- 多輪對話：Chat、串流
+- 多模態：文字 + 圖片
+- 範例：Zero-shot、總結、翻譯、旅遊規劃等
+
+詳見 [text_generation/README.md](./text_generation/README.md)。
+
+---
+
+## 2. 文件理解 (document_understanding)
+
+- PDF（遠端/本機、大檔案）
+- 摘要、問答、結構化擷取
+
+詳見 [document_understanding/README.md](./document_understanding/README.md)。
+
+---
+
+## 3. 結構化輸出 (structure_output)
+
+- 指定 JSON schema 產出
+- 列舉與格式控制
+
+詳見 [structure_output/README.md](./structure_output/README.md)。
+
+---
+
+## 4. 程式碼執行 (code_execution)
+
+- 產生並執行 Python 程式碼
+- Chat 內使用 code execution、匯率換算等範例
+
+詳見 [code_execution/README.md](./code_execution/README.md)。
+
+---
+
+## 5. 函式呼叫 (function_calling)
+
+- [最簡單範例](./function_calling/simple_sample.ipynb)
+- [範例 1：匯率（自動呼叫）](./function_calling/example1)
+- [範例 2：匯率（手動呼叫）](./function_calling/example2)
+- [Gradio 範例](./function_calling/gradio_example1)
+- [多函式](./function_calling/multiFunction.ipynb)
 - [ChatSession.history](./function_calling/history.ipynb)
 - [手動管理函式呼叫](./function_calling/manual_function_calling.ipynb)
-- [鍊結呼叫(依順序呼叫多個function)](./function_calling/function_calling_chain.ipynb)
-- [平行呼叫(同時呼叫)](./function_calling/parallel_function_call.ipynb)
-- [從結構資料中截取資料](./function_calling/extract_structured_data.ipynb)
+- [鏈結呼叫](./function_calling/function_calling_chain.ipynb)
+- [平行呼叫](./function_calling/parallel_function_call.ipynb)
+- [從結構化資料擷取](./function_calling/extract_structured_data.ipynb)
 
-## 6. Embedings(未更新)
-- [文件內容搜尋](./embeddings/document_search)
+詳見 [function_calling/README.md](./function_calling/README.md)。
 
-## 7. [開源模型](./開源模型)
+---
 
+## 6. Embeddings（語意搜尋）
 
+- Gemini `text-embedding-004`、多語 E5 等
+- 文件搜尋、預訓練與查詢、ChromaDB 整合
 
+詳見 [embeddings/document_search/README.md](./embeddings/document_search/README.md)。
+
+---
+
+## 7. 開源模型
+
+- Hugging Face Inference API 等 serverless 模型範例（如 Mistral-Nemo）
+- 總結等應用
+
+詳見 [開源模型/README.md](./開源模型/README.md)。
+
+---
+
+## 專案結構總覽
+
+目錄樹與說明見 [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)。

@@ -1,4 +1,42 @@
+# 環境與金鑰
 .env
+.env.local
+*.env
+
+# 向量資料庫 / 應用快取
 .chroma
 .gradio
-__pycache__
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 作業系統
+.DS_Store
+Thumbs.db
+
+# 日誌與暫存
+*.log
+*.tmp
+.cache/

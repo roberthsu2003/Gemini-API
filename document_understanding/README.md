@@ -1,5 +1,5 @@
 ## 讀取文件(Document_understanding)
-Gemini API 支援pdf輸入,保含長的文件,最高達3600頁。Gemini模型使用原生視覺處理pdf檔,因此能夠了解文字和圖像內容.透過原生pdf視覺支援,Gemini模型能夠:
+Gemini API 支援 pdf 輸入，包含長文件,最高達3600頁。Gemini模型使用原生視覺處理pdf檔,因此能夠了解文字和圖像內容.透過原生pdf視覺支援,Gemini模型能夠:
 - 分析文件中的圖解說明,圖表和表格
 - 提取資訊轉換成為結構化資料
 - 回答有關於視覺所見和文字內容的問題
@@ -28,7 +28,7 @@ Gemini API 支援pdf輸入,保含長的文件,最高達3600頁。Gemini模型使
 每個文件頁面相當258tokens
 ### 透過internet取得pdf資料
 
-```pytho
+```python
 import httpx
 import base64
 import google.generativeai as genai
@@ -170,7 +170,7 @@ display(Markdown(response.text))
 
 ### 大型本地檔(超過20MB)
 
-```python
+```pythonn
 import httpx
 import base64
 import google.generativeai as genai
@@ -252,7 +252,7 @@ print(response.text)
 
 ### 暫時儲存pdf內容
 
-```python
+```pythonn
 import httpx
 import base64
 import google.generativeai as genai
@@ -278,7 +278,7 @@ print(response.text)
 
 **輸出**
 
-```python
+```pythonn
 prompt_token_count: 12603
 candidates_token_count: 602
 total_token_count: 13205

@@ -1,17 +1,29 @@
-streamlit
+# ========== 核心（Gemini API 必備） ==========
 google-genai
 python-dotenv
 ipywidgets
-pillow
+
+# ========== 介面與網頁 ==========
+gradio
+streamlit
+
+# ========== 資料與表格 ==========
 pandas
+
+# ========== Embeddings / 向量搜尋 ==========
+chromadb
+
+# ========== 開源模型（Hugging Face 等） ==========
 transformers
 torch
 scikit-learn
-chromadb
-gradio
+
+# ========== 影像與多媒體 ==========
+pillow
+
+# ========== 網頁擷取與解析 ==========
 selenium
 beautifulsoup4
 lxml
 html5lib
 requests
-
