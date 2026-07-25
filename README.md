@@ -4,11 +4,35 @@
 
 ---
 
+> **更新日期：2026-07** — 本專案已對齊 Gemini 3 世代模型與最新 [`google-genai`](https://github.com/googleapis/python-genai) SDK。
+> 舊的 `google-generativeai`（`genai.configure` / `GenerativeModel`）SDK 已淘汰，請改用本文示範的 `from google import genai` 寫法。
+
 ## 環境需求
 
 - **Python**：3.9+
 - **套件**：見 [requirements.txt](./requirements.txt)  
   核心依賴：`google-genai`、`python-dotenv`、`ipywidgets`
+
+安裝：
+
+```bash
+pip install -U google-genai python-dotenv ipywidgets
+```
+
+---
+
+## 目前可用的模型（2026-07）
+
+| 用途 | 建議模型 | 說明 |
+|------|----------|------|
+| **通用主力（本專案預設）** | `gemini-flash-latest` | 別名，永遠指向最新 Flash（目前為 Gemini 3.5 Flash）。速度、成本、能力平衡。 |
+| 最新 Flash（明確版本） | `gemini-3.6-flash` | 2026-07 GA，token 效率更好、程式/代理任務更強。 |
+| 高階推理 | `gemini-3.1-pro-preview` | 最強推理與長脈絡，適合複雜問題。 |
+| 低成本高吞吐 | `gemini-3.5-flash-lite` | 最省、最快，適合大量簡單任務。 |
+| 向量嵌入 | `gemini-embedding-001` | 支援 `task_type`、可調 `output_dimensionality`。 |
+| 多模態嵌入 | `gemini-embedding-2` | 最新，支援文字/圖片/影片/音訊，但不支援 `task_type`。 |
+
+> ⚠️ **已關閉/淘汰**：`gemini-2.0-flash-exp`、`gemini-2.0-flash`（2026-06-01 關閉）、`gemini-1.5-*` 全系列、`text-embedding-004`。本專案已全數更新，若你在舊筆記中看到這些名稱請一併替換。
 
 ---
 
@@ -26,15 +50,15 @@ from IPython.display import display, Markdown
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-flash-latest",
     contents="AI 是如何工作的？（請使用繁體中文回答）"
 )
 display(Markdown(response.text))
 ```
 
-### 關於「思考」功能
+### 關於「思考」功能（Gemini 3 世代）
 
-Gemini 2.5 Flash 預設會啟用思考模式，有助於回答品質，但會增加延遲與 token 用量。若需追求速度或降低成本，可關閉：
+Gemini 3 世代模型（含 `gemini-flash-latest`）預設會啟用思考模式，有助於回答品質，但會增加延遲與 token 用量。控制方式由舊版的 `thinking_budget`（數字）改為 **`thinking_level`**（`minimal` / `low` / `medium` / `high`）。想追求速度或降低成本時，調低層級：
 
 ```python
 from google import genai
@@ -42,21 +66,25 @@ from google.genai import types
 
 client = genai.Client()
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-flash-latest",
     contents="用幾句話說明 AI 如何運作",
     config=types.GenerateContentConfig(
-        thinking_config=types.ThinkingConfig(thinking_budget=0)
+        thinking_config=types.ThinkingConfig(thinking_level="low")
     ),
 )
 print(response.text)
 ```
+
+> 注意：Gemini 3 世代**不可同時**指定 `thinking_level` 與舊的 `thinking_budget`，且官方建議 `temperature` 維持預設 `1.0`（調動可能導致重複輸出或效能下降）。
 
 ---
 
 ## 官方資源
 
 - [Google AI Studio](https://aistudio.google.com/prompts/new_chat)（測試與實驗）
-- [Python SDK 說明](https://github.com/googleapis/python-genai?tab=readme-ov-file)
+- [Gemini API 模型列表](https://ai.google.dev/gemini-api/docs/models)
+- [Gemini 3 開發者指南](https://ai.google.dev/gemini-api/docs/gemini-3)
+- [Python SDK（google-genai）](https://github.com/googleapis/python-genai)
 
 ---
 
@@ -132,7 +160,7 @@ print(response.text)
 
 ## 6. Embeddings（語意搜尋）
 
-- Gemini `text-embedding-004`、多語 E5 等
+- Gemini `gemini-embedding-001`、多語 E5 等
 - 文件搜尋、預訓練與查詢、ChromaDB 整合
 
 詳見 [embeddings/document_search/README.md](./embeddings/document_search/README.md)。

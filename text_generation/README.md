@@ -19,7 +19,7 @@ from IPython.display import display, Markdown
 client = genai.Client()
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-flash-latest",
     contents="請問你的姓名(請使用繁體中文回答)?"
 )
 
@@ -59,7 +59,7 @@ with gr.Blocks(title="Example") as demo:
     @input_text.submit(inputs=input_text, outputs=[input_text,output_text])
     def generate_text(input_str:str):
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-flash-latest",
             contents=[input_str]
         )
         return (None, f"## {input_str}\n" + response.text)
@@ -153,7 +153,7 @@ with gr.Blocks(title="Example") as demo:
         elif style == "條列式":
             style = "請條列式重點\n"
         response = client.models.generate_content(
-                                            model="gemini-2.5-flash",    
+                                            model="gemini-flash-latest",    
                                             contents=[input_str],
                                             config=types.GenerateContentConfig(
                                                    system_instruction=f"""
@@ -186,7 +186,7 @@ from IPython.display import display, Markdown
 client = genai.Client()
 image = PIL.Image.open('bear.jpg')
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-flash-latest",
     contents=[image, "請告訴我這是什麼動物,還有關於它的一些資訊"]
 )
 
@@ -236,15 +236,12 @@ display(Markdown(response.text))
 
 **使用gradio介面**
 
-```
+```python
 import gradio as gr
-import PIL
-import google.generativeai as genai
 import os
+from google import genai
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel("gemini-2.0-flash-exp")
-
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
 
 with gr.Blocks() as demo:
@@ -267,7 +264,10 @@ with gr.Blocks() as demo:
             gr.Warning("請輸入文字")
             return None
         progress(0.5, desc="請稍後")
-        response = model.generate_content([text_box, image])
+        response = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=[text_box, image]
+        )
         progress(1, desc="完成")
         return gr.Markdown(container=True),response.text
     @image.upload(outputs=[answer,answer])
@@ -287,7 +287,7 @@ from google import genai
 
 client = genai.Client()
 response = client.models.generate_content_stream(
-    model="gemini-2.5-flash",
+    model="gemini-flash-latest",
     contents=["AI是如何工作的(請使用繁體中文回答)?"]
 )
 for chunk in response:
@@ -379,19 +379,12 @@ AI 的工作方式可以視為一個不斷迭代和最佳化的
 **streaming_gradio_介面**
 
 ```python
-import google.generativeai as genai
 import os
 import gradio as gr
+from google import genai
+from google.genai import types
 
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel(
-    "gemini-2.0-flash-exp",
-    system_instruction = """
-    你是一位文章的總結專家,也是一位繁體中文的高手。
-    你的任務是:
-    1. 請將內容`總結`
-    """
-)
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 with gr.Blocks(title="Example") as demo:
     gr.Markdown("# Text To Summarization(總結)")
@@ -405,7 +398,13 @@ with gr.Blocks(title="Example") as demo:
 
     @input_text.submit(inputs=[style_radio,input_text], outputs=[output_md])
     def generate_text(style:str,input_str:str):
-        response = model.generate_content(input_str,stream=True)
+        response = client.models.generate_content_stream(
+            model="gemini-flash-latest",
+            contents=input_str,
+            config=types.GenerateContentConfig(
+                system_instruction="你是一位文章的總結專家,也是一位繁體中文的高手。你的任務是:請將內容`總結`"
+            )
+        )
         if style=="口語化":
             style = "請使用口語化的風格\n"
         elif style == "學術":
@@ -441,7 +440,7 @@ from google import genai
 from IPython.display import display, Markdown
 
 client = genai.Client()
-chat = client.chats.create(model="gemini-2.5-flash")
+chat = client.chats.create(model="gemini-flash-latest")
 
 
 response = chat.send_message("我有2隻狗在我的房子內")
@@ -465,7 +464,7 @@ for message in chat.get_history():
 from google import genai
 
 client = genai.Client()
-chat = client.chats.create(model="gemini-2.5-flash")
+chat = client.chats.create(model="gemini-flash-latest")
 
 response = chat.send_message_stream("我有2隻狗在我的房子內")
 for chunk in response:
@@ -487,13 +486,12 @@ for message in chat.get_history():
 **chat_gradio簡單範例**
 
 ```python
-import google.generativeai as genai
 import os
 import gradio as gr
+from google import genai
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel("gemini-2.0-flash-exp")
-chat = model.start_chat()
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+chat = client.chats.create(model="gemini-flash-latest")
 
 def processing_chat(message, history):
     response = chat.send_message(message)
@@ -521,7 +519,7 @@ from google.genai import types
 client = genai.Client()
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-flash-latest",
     config=types.GenerateContentConfig(
         system_instruction="你是一隻貓,你的名字叫Neko."),
     contents="早安,您好嗎?"
@@ -542,7 +540,7 @@ from IPython.display import display, Markdown, Latex
 client = genai.Client()
 
 response = client.models.generate_content(
-    model = "gemini-2.5-flash",
+    model = "gemini-flash-latest",
     contents = ["說明AI如何工作"],
     config=types.GenerateContentConfig(
         temperature=0, # 確定性輸出（無隨機性）

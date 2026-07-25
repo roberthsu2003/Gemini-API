@@ -5,7 +5,11 @@
 ```python
 import gradio as gr
 import numpy as np
-import google.generativeai as genai
+import os
+from google import genai
+from google.genai import types
+
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
 def create_color_image(color="#FF0000"):
     #轉換 hex to RGB
@@ -28,13 +32,20 @@ def set_light_value(brightness:int, color_temp:str)->str:
     print('有執行')
     
 
-model = genai.GenerativeModel(
-    model_name='gemini-2.0-flash-exp',
+# 手動函式呼叫設定:關閉自動呼叫,並強制模型一定要呼叫指定函式(mode=ANY)
+fc_config = types.GenerateContentConfig(
     system_instruction='''
     1. 如果提出的問題不明確,您無法了解,請再次詢問使用者,並請給予幾個提示範例
     2. 如果提供的問題不是呼叫`set_light_value`函式,告訴使用者提供開燈的問題。
     ''',
-    tools=[set_light_value]
+    tools=[set_light_value],
+    automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+    tool_config=types.ToolConfig(
+        function_calling_config=types.FunctionCallingConfig(
+            mode="ANY",
+            allowed_function_names=["set_light_value"]
+        )
+    )
 )
 
 with gr.Blocks() as demo:
@@ -66,14 +77,11 @@ with gr.Blocks() as demo:
         #也不會有text的回覆
         #這個範例只是為了要取出function的參數值,所以function不需要return
         #使用send_message(),model可以自已去執行function,也會取得參數值
-        response = model.generate_content(question,
-                                          tool_config={
-                                              "function_calling_config":
-                                                {
-                                                    "mode":"ANY",
-                                                    "allowed_function_names": ["set_light_value"]
-                                                }
-                                              })
+        response = client.models.generate_content(
+            model='gemini-flash-latest',
+            contents=question,
+            config=fc_config
+        )
         brightness = response.candidates[0].content.parts[0].function_call.args['brightness']
         color_temp = response.candidates[0].content.parts[0].function_call.args['color_temp']
         if color_temp == "正常溫度":

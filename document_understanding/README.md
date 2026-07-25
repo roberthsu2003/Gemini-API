@@ -30,26 +30,24 @@ Gemini API 支援 pdf 輸入，包含長文件,最高達3600頁。Gemini模型�
 
 ```python
 import httpx
-import base64
-import google.generativeai as genai
 import os
+from google import genai
+from google.genai import types
 from IPython.display import display,Markdown,Latex
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash-exp"
-)
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 doc_url = "https://discovery.ucl.ac.uk/id/eprint/10089234/1/343019_3_art_0_py4t4l_convrt.pdf"
 
-doc_data = base64.standard_b64encode(httpx.get(doc_url).content).decode("utf-8")
+doc_data = httpx.get(doc_url).content  # 直接使用 bytes,不需 base64
 
 prompt = "總結這文件"
 
-response = model.generate_content(
-    contents=[{
-        'mime_type':'application/pdf',
-        'data': doc_data
-    },prompt]
+response = client.models.generate_content(
+    model="gemini-flash-latest",
+    contents=[
+        types.Part.from_bytes(data=doc_data, mime_type='application/pdf'),
+        prompt
+    ]
 )
 display(Markdown(response.text))
 
@@ -90,31 +88,27 @@ display(Markdown(response.text))
 
 ### 本地端pdf(檔案20MB以下)
 
-```
-import httpx
-import base64
-import google.generativeai as genai
+```python
 import os
+from google import genai
+from google.genai import types
 from IPython.display import display,Markdown,Latex
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash-exp"
-)
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
 doc_path = '說明書.pdf'
 with open(doc_path, "rb") as doc_file:
-    doc_data = base64.standard_b64encode(doc_file.read()).decode("utf-8")
+    doc_data = doc_file.read()  # 直接使用 bytes
 
 prompt = "總結這文件"
 
-response = model.generate_content([
-    {
-        'mime_type':'application/pdf',
-        'data':doc_data
-    },
-    prompt
-])
+response = client.models.generate_content(
+    model="gemini-flash-latest",
+    contents=[
+        types.Part.from_bytes(data=doc_data, mime_type='application/pdf'),
+        prompt
+    ]
+)
 
 display(Markdown(response.text))
 ```
@@ -170,20 +164,17 @@ display(Markdown(response.text))
 
 ### 大型本地檔(超過20MB)
 
-```pythonn
-import httpx
-import base64
-import google.generativeai as genai
+```python
 import os
+from google import genai
 from IPython.display import display,Markdown,Latex
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash-exp"
-)
-sample_pdf = genai.upload_file('說明書.pdf')
-response = model.generate_content(
-    ['給我這個pdf檔的說明',sample_pdf]
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+# 使用 File API 上傳大型檔案(超過 20MB 或想重複使用)
+sample_pdf = client.files.upload(file='說明書.pdf')
+response = client.models.generate_content(
+    model="gemini-flash-latest",
+    contents=['給我這個pdf檔的說明', sample_pdf]
 )
 print(response.text)
 ```
@@ -252,29 +243,33 @@ print(response.text)
 
 ### 暫時儲存pdf內容
 
-```pythonn
-import httpx
-import base64
-import google.generativeai as genai
-from google.generativeai import caching
+```python
 import os
+from google import genai
+from google.genai import types
 from IPython.display import display,Markdown,Latex
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
-document = genai.upload_file('說明書.pdf', mime_type='application/pdf')
-cache = caching.CachedContent.create(
-    model = "gemini-1.5-flash-002",
-    system_instruction = '你是一個專業的分析達人',
-    contents=[document]
+document = client.files.upload(file='說明書.pdf')
+cache = client.caches.create(
+    model="gemini-flash-latest",
+    config=types.CreateCachedContentConfig(
+        system_instruction='你是一個專業的分析達人',
+        contents=[document]
+    )
 )
 
-model = genai.GenerativeModel.from_cached_content(cache)
-
-response = model.generate_content("請分析這個文件")
+response = client.models.generate_content(
+    model="gemini-flash-latest",
+    contents="請分析這個文件",
+    config=types.GenerateContentConfig(cached_content=cache.name)
+)
 print(response.usage_metadata)
 print(response.text)
 ```
+
+> 提示：內容快取(context caching)適合同一份大型文件要重複提問的情境，可省下重複傳送文件的 token 費用。
 
 **輸出**
 

@@ -1,5 +1,7 @@
 # ========== 核心（Gemini API 必備） ==========
-google-genai
+# 使用新版 google-genai SDK（from google import genai）
+# 舊版 google-generativeai（genai.configure / GenerativeModel）已淘汰，請勿再使用
+google-genai>=1.0.0
 python-dotenv
 ipywidgets
 

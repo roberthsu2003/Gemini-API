@@ -1,6 +1,28 @@
 ## 語意搜尋
-### 使用gemini內提供的models/text-embedding-004建立的embedding
-**注意不適合建立繁體中文語意搜尋,但適合英文的語意**
+
+> **模型更新（2026-07）**：舊的 `text-embedding-004` 已淘汰，請改用 `gemini-embedding-001`（支援 `task_type`、可調 `output_dimensionality`）。若需多模態（文字/圖片/影片/音訊）嵌入，可用最新的 `gemini-embedding-2`（但不支援 `task_type`）。本章範例已更新為新版 `google-genai` SDK 寫法。
+
+新版 SDK 產生嵌入的方式：
+
+```python
+from google import genai
+from google.genai import types
+import os
+
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+result = client.models.embed_content(
+    model="gemini-embedding-001",
+    contents="要建立向量的文字內容",
+    config=types.EmbedContentConfig(
+        task_type="RETRIEVAL_DOCUMENT",   # 查詢時改用 RETRIEVAL_QUERY
+        output_dimensionality=768         # 可選:768 / 1536 / 3072
+    )
+)
+print(result.embeddings[0].values)
+```
+
+### 使用 gemini 提供的 `gemini-embedding-001` 建立的 embedding
+**注意:Gemini 嵌入對繁體中文的檢索效果一般，繁體中文語意搜尋建議搭配下方的多語 E5 模型評估**
 - [最簡單的範例](./document_search.ipynb)
 - [使用csv檔](./document_search1.ipynb)
 

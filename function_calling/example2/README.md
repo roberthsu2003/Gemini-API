@@ -4,7 +4,6 @@
 
 ```python
 #定義function calling
-import google.generativeai as genai
 import os
 from IPython.display import display,Markdown
 import requests
@@ -41,51 +40,52 @@ def get_exchange_rate(currency_from:str,currency_to:str,date:str='latest'):
 
 ## 手動呼叫function
 
-```
+```python
 #手動呼叫function,手動產生response
 #為什麼要如此做呢?因為如果執行function有raise exception,我們可以手動處理
 #可以加強程式的可靠度
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 from IPython.display import display,Markdown 
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel(
-    model_name='gemini-2.0-flash-exp',
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+
+# 手動函式呼叫:把「自動函式呼叫」關閉,模型只會回傳 function_call,不會自己執行
+config = types.GenerateContentConfig(
     tools=[get_exchange_rate],
-    system_instruction='''
-    如果沒有指定日期,請設定date='latest'
-    '''
+    system_instruction="如果沒有指定日期,請設定date='latest'",
+    automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
 )
 
-chat = model.start_chat() #手動呼叫
+chat = client.chats.create(model='gemini-flash-latest', config=config)
 response = chat.send_message('2024-12-04,200歐幣對換澳幣是多少錢?')
-try:
-    if answer := response.text: #如果有text,代表prompt的文字有問題,檢查response,只有text,沒有function_call,如果正常呼叫時會沒有text,會raise錯誤
-        print(answer)
-        print(response)      
-except:
-    for part in response.parts: #手動取出所有的引數值和function名稱
-            if fn := part.function_call:
-                print(fn)
-                args = {key:val for key,val in fn.args.items()}
-                try:
-                    return_values = get_exchange_rate(**args)#手動呼叫function,如果有出錯會raise錯誤
-                    print(return_values)
-                except:
-                    print("目前系統有問題")
 
-                
-
+return_values = None
+for part in response.candidates[0].content.parts: #手動取出所有的引數值和function名稱
+    if part.function_call:
+        fn = part.function_call
+        print(fn)
+        args = {key: val for key, val in fn.args.items()}
+        try:
+            return_values = get_exchange_rate(**args) #手動呼叫function,如果有出錯會raise錯誤
+            print(return_values)
+        except Exception:
+            print("目前系統有問題")
+    elif part.text:
+        print(part.text) #如果只有 text,代表模型沒有觸發 function_call
 ```
 
 ## 手動產生part內的response
 
 ```python
-#手動產生response
-response_parts = genai.protos.Part(function_response=genai.protos.FunctionResponse(name='get_exchange_rate', response={'result':return_values}))
-response = chat.send_message(response_parts)
+#手動把函式的傳回值送回模型,由模型整理成最終文字
+function_response_part = types.Part.from_function_response(
+    name='get_exchange_rate',
+    response={'result': return_values}
+)
+response = chat.send_message(function_response_part)
 print(response.text)
 ```
 

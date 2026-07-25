@@ -1,10 +1,9 @@
-import google.generativeai as genai
 import os
 import gradio as gr
+from google import genai
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel("gemini-2.0-flash-exp")
-chat = model.start_chat()
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+chat = client.chats.create(model="gemini-flash-latest")
 
 def processing_chat(message, history):
     response = chat.send_message(message)
@@ -16,5 +15,3 @@ demo = gr.ChatInterface(
 )
 
 demo.launch()
-
-

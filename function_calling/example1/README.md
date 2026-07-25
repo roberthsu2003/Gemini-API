@@ -3,16 +3,14 @@
 - 模型是預訓練,無法取得當下資料
 
 ```python
-import google.generativeai as genai
+from google import genai
 import os
 from IPython.display import display,Markdown 
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel(
-    model_name='gemini-2.0-flash-exp'
-)
-response = model.generate_content(
-   "今日歐元和美金的匯率?" 
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+response = client.models.generate_content(
+    model='gemini-flash-latest',
+    contents="今日歐元和美金的匯率?"
 )
 display(Markdown(response.text))
 ```
@@ -150,23 +148,24 @@ get_exchange_rate('USD',"AUD")
 ### 由model chat來呼叫
 
 ```python
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 from IPython.display import display,Markdown 
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel(
-    model_name='gemini-2.0-flash-exp',
-    tools=[get_exchange_rate],
-    system_instruction='''
-    如果沒有指定日期,請設定date='latest'
-    '''
-)
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
-chat = model.start_chat(enable_automatic_function_calling=True)
+# 新版 SDK:只要把 Python 函式放進 tools,預設就會「自動函式呼叫」
+# (模型自行呼叫函式、取得傳回值,再由模型整理成最終文字)
+chat = client.chats.create(
+    model='gemini-flash-latest',
+    config=types.GenerateContentConfig(
+        tools=[get_exchange_rate],
+        system_instruction="如果沒有指定日期,請設定date='latest'"
+    )
+)
 response = chat.send_message('今日100美金對換澳幣是多少錢?')
 print(response.text)
-print(chat.last)
 ```
 
 **輸出**

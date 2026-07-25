@@ -4,73 +4,73 @@
 
 ```python
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel(
-    model_name='gemini-2.0-flash-exp',
-    tools='code_execution'
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+response = client.models.generate_content(
+    model='gemini-flash-latest',
+    contents='What is the sum of the first 50 prime numbers? '
+             'Generate and run code for the calculation, and make sure you get all 50.',
+    config=types.GenerateContentConfig(
+        tools=[types.Tool(code_execution=types.ToolCodeExecution())]
     )
-response = model.generate_content(
-    ('What is the sum of the first 50 prime numbers? ',
-    'Generate and run code for the calculation, and make sure you get all 50.')
 )
 
 print(response.text)
-
 ```
 
-**另一種寫法**
+> 新版 `google-genai` 以 `config=types.GenerateContentConfig(tools=[types.Tool(code_execution=types.ToolCodeExecution())])` 啟用程式碼執行工具；舊版的 `tools='code_execution'` 字串寫法已淘汰。
+
+**讀取產生的程式碼與執行結果**
+
+回應會拆成多個 `part`，可分別取出模型文字、產生的程式碼與執行輸出：
 
 ```python
-import os
-import google.generativeai as genai
-
-genai.configure(api_key=os.environ['API_KEY'])
-
-model = genai.GenerativeModel(model_name='gemini-1.5-pro')
-
-response = model.generate_content(
-    ('What is the sum of the first 50 prime numbers? '
-    'Generate and run code for the calculation, and make sure you get all 50.'),
-    tools='code_execution')
-
-print(response.text)
+for part in response.candidates[0].content.parts:
+    if part.text is not None:
+        print("文字:", part.text)
+    if part.executable_code is not None:
+        print("程式碼:\n", part.executable_code.code)
+    if part.code_execution_result is not None:
+        print("執行結果:\n", part.code_execution_result.output)
 ```
 
 ## chat內使用code execution
 
 ```python
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
-genai.configure(api_key=os.environ['API_KEY'])
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
-model = genai.GenerativeModel(model_name='gemini-1.5-pro',
-                              tools='code_execution')
+chat = client.chats.create(
+    model='gemini-flash-latest',
+    config=types.GenerateContentConfig(
+        tools=[types.Tool(code_execution=types.ToolCodeExecution())]
+    )
+)
 
-chat = model.start_chat()
-
-response = chat.send_message((
+response = chat.send_message(
     'What is the sum of the first 50 prime numbers? '
-    'Generate and run code for the calculation, and make sure you get all 50.'))
+    'Generate and run code for the calculation, and make sure you get all 50.')
 
 print(response.text)
 ```
 
 **台灣銀行匯率換算**
 
-```
-import google.generativeai as genai
+```python
 import os
+from google import genai
+from google.genai import types
 
 with open('2025_01_29.csv',encoding='utf-8') as file:
     csv_content = file.read()
-    
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash-exp",
-    system_instruction='''
+
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+system_instruction = '''
     ## 請依據以下的csv格式的文字回答問題
     ## 這個表格是銀行的台幣和各幣值的轉換匯率
     ## 如果沒有資料,請輸出`沒有相關幣的資料`
@@ -79,14 +79,18 @@ model = genai.GenerativeModel(
         `台幣/現金匯率本行賣出的美金價格=`
         2.如果使用者輸入的是美金換取台幣,換算公式為:
         `現金匯率本行買入美金*美金的金額=`
-        3.如果不是換成台幣,請先將金額換成台幣後,再轉換為使用者要求的幣值   
-    
-    ''' + csv_content,
-    tools = 'code_execution'
-    
-)
+        3.如果不是換成台幣,請先將金額換成台幣後,再轉換為使用者要求的幣值
 
-response = model.generate_content('我有10000的加拿大幣,換成美金幣是多少錢?')
+    ''' + csv_content
+
+response = client.models.generate_content(
+    model="gemini-flash-latest",
+    contents='我有10000的加拿大幣,換成美金幣是多少錢?',
+    config=types.GenerateContentConfig(
+        system_instruction=system_instruction,
+        tools=[types.Tool(code_execution=types.ToolCodeExecution())]
+    )
+)
 print(response.text)
 
 #=====output===========
