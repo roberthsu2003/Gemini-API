@@ -34,24 +34,24 @@ with gr.Blocks(title="Example") as demo:
         else:
             style_prompt = f"請使用{style}風格\n"
 
-        response = client.models.generate_content_stream(
-            model="gemini-flash-latest",
-            contents=input_str,
-            config=types.GenerateContentConfig(
-                system_instruction=f"""
-                你是一位文章的總結專家,也是一位繁體中文的高手。
-                你的任務是:
-                1. 請將內容`總結`
-                2. {style_prompt}
-                """
-            )
+        stream = client.interactions.create(
+            model="gemini-3.7-flash",
+            system_instruction=f"""
+            你是一位文章的總結專家,也是一位繁體中文的高手。
+            你的任務是:
+            1. 請將內容`總結`
+            2. {style_prompt}
+            """,
+            input=input_str,
+            stream=True
         )
 
         result_text = ""
 
-        for chunk in response:
-            result_text += chunk.text
-            yield( f"{style_prompt}\n\n### 總結內容如下:\n" + result_text)
+        for event in stream:
+            if event.event_type == "step.delta" and event.delta.type == "text":
+                result_text += event.delta.text
+                yield( f"{style_prompt}\n\n### 總結內容如下:\n" + result_text)
 
 
 

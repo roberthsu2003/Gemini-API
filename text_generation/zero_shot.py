@@ -24,10 +24,10 @@ with gr.Blocks(title="Example") as demo:
 
     @input_text.submit(inputs=input_text, outputs=[input_text,output_text])
     def generate_text(input_str:str):
-        response = client.models.generate_content(
-            model="gemini-flash-latest",
-            contents=input_str
+        interaction = client.interactions.create(
+            model="gemini-3.7-flash",
+            input=input_str
         )
-        return (None, f"## {input_str}\n" + response.text)
+        return (None, f"## {input_str}\n" + (interaction.output_text or ""))
 
 demo.launch()

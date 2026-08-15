@@ -105,10 +105,11 @@ print(response.text)
 
 ## 1. 文字生成 (text_generation)
 
-- 單輪：`generateContent`、`streamGenerateContent`
-- 多輪對話：Chat、串流
-- 多模態：文字 + 圖片
-- 範例：Zero-shot、總結、翻譯、旅遊規劃等
+- 統一採用官方推薦的 **Interactions API** (`client.interactions.create`)
+- 單輪文字生成、串流回應（`stream=True` / `step.delta`）
+- 伺服器端狀態化多輪對話（`previous_interaction_id`）與無狀態對話（`store=False`）
+- 多模態圖文輸入、思考模式（`thinking_level`）與系統指示（`system_instruction`）
+- 範例：Zero-shot、總結、翻譯、旅遊規劃、Gradio 介面整合等
 
 詳見 [text_generation/README.md](./text_generation/README.md)。
 

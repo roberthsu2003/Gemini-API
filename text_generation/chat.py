@@ -6,11 +6,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-chat = client.chats.create(model="gemini-flash-latest")
+
+# 使用 Interactions API 伺服器端狀態管理 (previous_interaction_id)
+last_interaction_id = None
 
 def processing_chat(message, history):
-    response = chat.send_message(message)
-    return response.text
+    global last_interaction_id
+    interaction = client.interactions.create(
+        model="gemini-3.7-flash",
+        input=message,
+        previous_interaction_id=last_interaction_id
+    )
+    last_interaction_id = interaction.id
+    return interaction.output_text
 
 demo = gr.ChatInterface(
     fn = processing_chat,

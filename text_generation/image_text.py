@@ -1,5 +1,7 @@
 import gradio as gr
 import os
+import io
+import base64
 from google import genai
 from dotenv import load_dotenv
 
@@ -29,12 +31,20 @@ with gr.Blocks() as demo:
             gr.Warning("請輸入文字")
             return gr.Markdown(container=False), ""
         progress(0.5, desc="請稍後")
-        response = client.models.generate_content(
-            model="gemini-flash-latest",
-            contents=[text_box, image]
+
+        buffered = io.BytesIO()
+        image.save(buffered, format="JPEG")
+        img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+        interaction = client.interactions.create(
+            model="gemini-3.7-flash",
+            input=[
+                {"type": "text", "text": text_box},
+                {"type": "image", "data": img_b64, "mime_type": "image/jpeg"}
+            ]
         )
         progress(1, desc="完成")
-        return gr.Markdown(container=True),response.text
+        return gr.Markdown(container=True), (interaction.output_text or "")
     @image.upload(outputs=[answer,answer])
     def clear_answer():
         return gr.Markdown(container=False),""
