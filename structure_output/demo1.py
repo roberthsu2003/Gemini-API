@@ -3,6 +3,9 @@ import json
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 # 使用 Pydantic 定義輸出結構(新版 google-genai 推薦寫法)

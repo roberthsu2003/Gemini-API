@@ -3,6 +3,9 @@ import os
 import json
 from google import genai
 from google.genai import types
+from dotenv import load_dotenv
+
+load_dotenv()
 
 with open('2025_01_29.csv', encoding='utf-8') as file:
     csv_content = file.read()

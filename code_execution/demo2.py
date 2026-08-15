@@ -1,6 +1,9 @@
 import os
 from google import genai
 from google.genai import types
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def set_light_value(brightness: int, color_temp: str) -> dict:
@@ -38,26 +41,24 @@ response = client.models.generate_content(
 )
 print(response)
 
-if response.candidates:
-    print("有candidates")
-    part = response.candidates[0].content.parts[0]
-    if part.function_call:
-        function_name = part.function_call.name
-        args = part.function_call.args
-        print(type(function_name))  # <class 'str'>
-        print(type(args))           # <class 'dict'>
+# Create a dictionary of available functions
+available_functions = {
+    'set_light_value': set_light_value
+}
 
-        # Create a dictionary of available functions
-        available_functions = {
-            'set_light_value': set_light_value
-        }
+if response.function_calls:
+    print("有 function_calls")
+    for call in response.function_calls:
+        function_name = call.name
+        args = call.args
+        print(f"Function name: {function_name} ({type(function_name)})")
+        print(f"Function args: {args} ({type(args)})")
 
-        # Get the function from the dictionary and call it with the arguments
         if function_name in available_functions:
             args_dict = dict(args)
             result = available_functions[function_name](**args_dict)
             print("Function result:", result)
         else:
             print(f"Function {function_name} not found")
-    else:
-        print("模型沒有觸發 function_call,回覆文字為:", part.text)
+else:
+    print("模型沒有觸發 function_call,回覆文字為:", response.text)

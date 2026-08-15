@@ -3,6 +3,9 @@ import numpy as np
 import os
 from google import genai
 from google.genai import types
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
@@ -75,8 +78,19 @@ with gr.Blocks() as demo:
             contents=question,
             config=fc_config
         )
-        brightness = response.candidates[0].content.parts[0].function_call.args['brightness']
-        color_temp = response.candidates[0].content.parts[0].function_call.args['color_temp']
+        if response.function_calls:
+            call = response.function_calls[0]
+            brightness = call.args.get('brightness', 0)
+            color_temp = call.args.get('color_temp', '正常溫度')
+        else:
+            brightness = 0
+            color_temp = '正常溫度'
+            for candidate in (response.candidates or []):
+                for part in (candidate.content.parts or []):
+                    if part.function_call:
+                        brightness = part.function_call.args.get('brightness', 0)
+                        color_temp = part.function_call.args.get('color_temp', '正常溫度')
+                        break
         if color_temp == "正常溫度":
             color = "#DDDDDD"
         elif color_temp == "冷溫度":

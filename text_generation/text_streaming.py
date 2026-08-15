@@ -3,6 +3,10 @@ import gradio as gr
 from google import genai
 from google.genai import types
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 with gr.Blocks(title="Example") as demo:
@@ -17,31 +21,37 @@ with gr.Blocks(title="Example") as demo:
 
     @input_text.submit(inputs=[style_radio,input_text], outputs=[output_md])
     def generate_text(style:str,input_str:str):
+        if style=="口語化":
+            style_prompt = "請使用口語化的風格\n"
+        elif style == "學術":
+            style_prompt = "請使用專業學術的風格\n"
+        elif style == "商業":
+            style_prompt = "請使用商業文章的風格\n"
+        elif style == "專業":
+            style_prompt = "請使用專業風格\n"
+        elif style == "條列式":
+            style_prompt = "請條列式重點\n"
+        else:
+            style_prompt = f"請使用{style}風格\n"
+
         response = client.models.generate_content_stream(
             model="gemini-flash-latest",
             contents=input_str,
             config=types.GenerateContentConfig(
-                system_instruction="""
+                system_instruction=f"""
                 你是一位文章的總結專家,也是一位繁體中文的高手。
                 你的任務是:
                 1. 請將內容`總結`
+                2. {style_prompt}
                 """
             )
         )
-        if style=="口語化":
-            style = "請使用口語化的風格\n"
-        elif style == "學術":
-            style = "請使用專業學術的風格\n"
-        elif style == "商業":
-            style = "請使用商業文章的風格\n"
-        elif style == "條列式":
-            style = "請條列式重點\n"
 
         result_text = ""
 
         for chunk in response:
             result_text += chunk.text
-            yield( f"{style}\n\n### 總結內容如下:\n" + result_text)
+            yield( f"{style_prompt}\n\n### 總結內容如下:\n" + result_text)
 
 
 

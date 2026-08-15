@@ -1,6 +1,9 @@
 import gradio as gr
 import os
 from google import genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
@@ -20,11 +23,11 @@ with gr.Blocks() as demo:
     def image_to_text(image, text_box,progress=gr.Progress()):
         if not image:
             gr.Warning("沒有圖片")
-            return None
+            return gr.Markdown(container=False), ""
 
         if text_box=="":
             gr.Warning("請輸入文字")
-            return None
+            return gr.Markdown(container=False), ""
         progress(0.5, desc="請稍後")
         response = client.models.generate_content(
             model="gemini-flash-latest",

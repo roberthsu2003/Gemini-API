@@ -16,10 +16,10 @@ def train_and_save_embeddings():
     print("Created new collection")
 
     df = pd.read_csv('001.csv')
-    df['說明'] = '地址:' + df['地址']+',' + \
-    '經度:' + df['經度'].astype(str)+',' + \
-    '緯度:' + df['緯度'].astype(str)+',' + \
-    '充電樁數量' + df['充電樁數量']
+    df['說明'] = '地址:' + df['地址'].astype(str) + ',' + \
+    '經度:' + df['經度'].astype(str) + ',' + \
+    '緯度:' + df['緯度'].astype(str) + ',' + \
+    '充電樁數量:' + df['充電樁數量'].astype(str)
 
     result_df = df[['充電樁位置','說明']]
     result_df.columns = ['Title','Text']
