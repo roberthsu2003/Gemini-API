@@ -9,7 +9,7 @@ from google.genai import types
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 response = client.models.generate_content(
-    model='gemini-flash-latest',
+    model='gemini-3.7-flash',
     contents='What is the sum of the first 50 prime numbers? '
              'Generate and run code for the calculation, and make sure you get all 50.',
     config=types.GenerateContentConfig(
@@ -46,7 +46,7 @@ from google.genai import types
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
 chat = client.chats.create(
-    model='gemini-flash-latest',
+    model='gemini-3.7-flash',
     config=types.GenerateContentConfig(
         tools=[types.Tool(code_execution=types.ToolCodeExecution())]
     )
@@ -84,7 +84,7 @@ system_instruction = '''
     ''' + csv_content
 
 response = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents='我有10000的加拿大幣,換成美金幣是多少錢?',
     config=types.GenerateContentConfig(
         system_instruction=system_instruction,
@@ -92,8 +92,11 @@ response = client.models.generate_content(
     )
 )
 print(response.text)
+```
 
-#=====output===========
+**輸出範例**：
+
+```markdown
 好的，我來幫你計算。
 
 首先，我需要將你的加拿大幣換算成台幣，然後再將台幣換算成美金。
@@ -106,17 +109,16 @@ print(response.text)
 
 `222000 / 32.95 = 美金`
 
-
-``` python
+```python
 cad_to_twd = 10000 * 22.2
 usd_amount = cad_to_twd / 32.95
 print(f'{usd_amount=}')
-
 ```
+
 ```
 usd_amount=6737.481031866464
-
 ```
+
 因此，10000 加拿大幣大約可以換成 6737.48 美金。
 ```
 

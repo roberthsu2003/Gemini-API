@@ -9,7 +9,7 @@ from IPython.display import display,Markdown
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 response = client.models.generate_content(
-    model='gemini-flash-latest',
+    model='gemini-3.7-flash',
     contents="今日歐元和美金的匯率?"
 )
 display(Markdown(response.text))
@@ -158,7 +158,7 @@ client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 # 新版 SDK:只要把 Python 函式放進 tools,預設就會「自動函式呼叫」
 # (模型自行呼叫函式、取得傳回值,再由模型整理成最終文字)
 chat = client.chats.create(
-    model='gemini-flash-latest',
+    model='gemini-3.7-flash',
     config=types.GenerateContentConfig(
         tools=[get_exchange_rate],
         system_instruction="如果沒有指定日期,請設定date='latest'"

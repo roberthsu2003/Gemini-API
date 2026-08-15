@@ -40,7 +40,7 @@ Recipe = {'recipe_name':str, 'ingredients':list[str]}
 Return: list[Recipe]"""
 
 result = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents=prompt
 )
 json_str = result.text.replace('```json', '').replace('```', '')  # 去除 markdown 圍欄
@@ -64,7 +64,7 @@ Recipe = {'recipe_name':str, 'ingredients':list[str]}
 Return: list[Recipe]"""
 
 result = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents=prompt
 )
 json_str = result.text.replace('```json', '').replace('```', '')  # 去除 markdown 圍欄
@@ -133,7 +133,7 @@ system_instruction = '''
 '''
 
 response = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents=cleaned_content,
     config=types.GenerateContentConfig(system_instruction=system_instruction)
 )
@@ -172,7 +172,7 @@ class Recipe(BaseModel):
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 result = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents='List a few popular cookie recipes.',
     config=types.GenerateContentConfig(
         response_mime_type="application/json",
@@ -201,7 +201,7 @@ class Recipe(BaseModel):
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 result = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents='最常見的5種中式料理食譜,請條列式的方法列出食材和食材的份量,並使用json的格式輸出,請使用繁體中文',
     config=types.GenerateContentConfig(
         response_mime_type="application/json",
@@ -238,7 +238,7 @@ system_instruction = '''
 ''' + csv_content
 
 response = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents='''
 1. 以現有的資料,台幣可以換算的幣值有那一些?
 2. 請排除無法計算的幣別
@@ -284,7 +284,7 @@ base_instruction = '''
 
 # 取得可換算的幣別清單(JSON)
 response = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents='''
 1. 以現有的資料,台幣可以換算的幣值有那一些?
 2. 請排除無法計算的幣別
@@ -349,7 +349,7 @@ with gr.Blocks() as demo:
     def btn_click(number_value,in_radio_value,in_output_value):
         message = [f"請將{number_value}{in_radio_value}轉換為{in_output_value}","請輸出為markdown格式"]
         response = client.models.generate_content(
-            model="gemini-flash-latest",
+            model="gemini-3.7-flash",
             contents=message,
             config=types.GenerateContentConfig(system_instruction=base_instruction)
         )
@@ -380,7 +380,7 @@ class Choice(enum.Enum):
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 organ = client.files.upload(file='organ.jpg')
 result = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents=['What kind of instrument is this:', organ],
     config=types.GenerateContentConfig(
         response_mime_type="text/x.enum",
@@ -400,7 +400,7 @@ import os
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 organ = client.files.upload(file='organ.jpg')
 result = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents=['What kind of instrument is this:', organ],
     config=types.GenerateContentConfig(
         response_mime_type="text/x.enum",
@@ -436,7 +436,7 @@ class Recipe(BaseModel):
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 result = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents="List about 10 cookie recipes, grade them based on popularity",
     config=types.GenerateContentConfig(
         response_mime_type="application/json",

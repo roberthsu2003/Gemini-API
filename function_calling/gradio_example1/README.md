@@ -73,17 +73,26 @@ with gr.Blocks() as demo:
     
     @question_text.submit(inputs=[question_text],outputs=[slider_brightness,temperature_image])
     def process(question:str):
-        #使用generate_content,model不會去執行function,只會取得參數值,必需手動取得參數值,再自已呼叫
-        #也不會有text的回覆
+        #使用generate_content且關閉自動呼叫,model不會去執行function,只會取得參數值,必需手動取得參數值,再自已呼叫
         #這個範例只是為了要取出function的參數值,所以function不需要return
-        #使用send_message(),model可以自已去執行function,也會取得參數值
         response = client.models.generate_content(
-            model='gemini-flash-latest',
+            model='gemini-3.7-flash',
             contents=question,
             config=fc_config
         )
-        brightness = response.candidates[0].content.parts[0].function_call.args['brightness']
-        color_temp = response.candidates[0].content.parts[0].function_call.args['color_temp']
+        if response.function_calls:
+            call = response.function_calls[0]
+            brightness = call.args.get('brightness', 0)
+            color_temp = call.args.get('color_temp', '正常溫度')
+        else:
+            brightness = 0
+            color_temp = '正常溫度'
+            for candidate in (response.candidates or []):
+                for part in (candidate.content.parts or []):
+                    if part.function_call:
+                        brightness = part.function_call.args.get('brightness', 0)
+                        color_temp = part.function_call.args.get('color_temp', '正常溫度')
+                        break
         if color_temp == "正常溫度":
             color = "#DDDDDD"
         elif color_temp == "冷溫度":

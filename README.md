@@ -25,10 +25,9 @@ pip install -U google-genai python-dotenv ipywidgets
 
 | 用途 | 建議模型 | 說明 |
 |------|----------|------|
-| **通用主力（本專案預設）** | `gemini-flash-latest` | 別名，永遠指向最新 Flash（目前為 Gemini 3.5 Flash）。速度、成本、能力平衡。 |
-| 最新 Flash（明確版本） | `gemini-3.6-flash` | 2026-07 GA，token 效率更好、程式/代理任務更強。 |
-| 高階推理 | `gemini-3.1-pro-preview` | 最強推理與長脈絡，適合複雜問題。 |
-| 低成本高吞吐 | `gemini-3.5-flash-lite` | 最省、最快，適合大量簡單任務。 |
+| **通用主力（建議使用）** | `gemini-3.7-flash` | 1M tokens，平衡效能、多模態、推理與 Agentic 任務。 |
+| 高階推理 | `gemini-3.1-pro-preview` | 1M tokens，最強推理與長脈絡，適合複雜問題與編程。 |
+| 低成本高吞吐 | `gemini-3.5-flash-lite` | 最省、最快，適合大量輕量任務。 |
 | 向量嵌入 | `gemini-embedding-001` | 支援 `task_type`、可調 `output_dimensionality`。 |
 | 多模態嵌入 | `gemini-embedding-2` | 最新，支援文字/圖片/影片/音訊，但不支援 `task_type`。 |
 
@@ -36,9 +35,11 @@ pip install -U google-genai python-dotenv ipywidgets
 
 ---
 
-## 快速開始
+## 快速開始 (Interactions API)
 
-### 設定 API 金鑰
+Interactions API 是 Google 官方推薦的統一互動介面，使用 `client.interactions.create()` 即可涵蓋文字生成、多模態輸入、串流輸出與伺服器端狀態維護的多輪對話。
+
+### 基本文字生成
 
 將 API 金鑰設為環境變數 `GEMINI_API_KEY`，SDK 會自動讀取。或於初始化時傳入：
 
@@ -49,33 +50,33 @@ from IPython.display import display, Markdown
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-response = client.models.generate_content(
-    model="gemini-flash-latest",
-    contents="AI 是如何工作的？（請使用繁體中文回答）"
+interaction = client.interactions.create(
+    model="gemini-3.7-flash",
+    input="AI 是如何工作的？（請使用繁體中文回答）"
 )
-display(Markdown(response.text))
+display(Markdown(interaction.output_text))
 ```
 
-### 關於「思考」功能（Gemini 3 世代）
+### 關於「思考」功能（Thinking with Gemini）
 
-Gemini 3 世代模型（含 `gemini-flash-latest`）預設會啟用思考模式，有助於回答品質，但會增加延遲與 token 用量。控制方式由舊版的 `thinking_budget`（數字）改為 **`thinking_level`**（`minimal` / `low` / `medium` / `high`）。想追求速度或降低成本時，調低層級：
+Gemini 3 世代模型（如 `gemini-3.7-flash`）預設會啟用思考模式。您可以透過 `generation_config` 中的 **`thinking_level`**（`minimal` / `low` / `medium` / `high`）控制思考深度：
 
 ```python
 from google import genai
-from google.genai import types
 
 client = genai.Client()
-response = client.models.generate_content(
-    model="gemini-flash-latest",
-    contents="用幾句話說明 AI 如何運作",
-    config=types.GenerateContentConfig(
-        thinking_config=types.ThinkingConfig(thinking_level="low")
-    ),
+interaction = client.interactions.create(
+    model="gemini-3.7-flash",
+    input="用幾句話說明 AI 如何運作",
+    generation_config={
+        "thinking_level": "low",
+        "temperature": 1.0
+    }
 )
-print(response.text)
+print(interaction.output_text)
 ```
 
-> 注意：Gemini 3 世代**不可同時**指定 `thinking_level` 與舊的 `thinking_budget`，且官方建議 `temperature` 維持預設 `1.0`（調動可能導致重複輸出或效能下降）。
+> 注意：官方建議 `temperature` 維持預設 `1.0`（調動可能導致重複輸出或效能下降）。
 
 ---
 

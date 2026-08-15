@@ -59,7 +59,7 @@ config = types.GenerateContentConfig(
     automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
 )
 
-chat = client.chats.create(model='gemini-flash-latest', config=config)
+chat = client.chats.create(model='gemini-3.7-flash', config=config)
 response = chat.send_message('2024-12-04,200歐幣對換澳幣是多少錢?')
 
 return_values = None

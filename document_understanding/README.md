@@ -43,7 +43,7 @@ doc_data = httpx.get(doc_url).content  # 直接使用 bytes,不需 base64
 prompt = "總結這文件"
 
 response = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents=[
         types.Part.from_bytes(data=doc_data, mime_type='application/pdf'),
         prompt
@@ -103,7 +103,7 @@ with open(doc_path, "rb") as doc_file:
 prompt = "總結這文件"
 
 response = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents=[
         types.Part.from_bytes(data=doc_data, mime_type='application/pdf'),
         prompt
@@ -173,7 +173,7 @@ client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 # 使用 File API 上傳大型檔案(超過 20MB 或想重複使用)
 sample_pdf = client.files.upload(file='說明書.pdf')
 response = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents=['給我這個pdf檔的說明', sample_pdf]
 )
 print(response.text)
@@ -253,7 +253,7 @@ client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
 document = client.files.upload(file='說明書.pdf')
 cache = client.caches.create(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     config=types.CreateCachedContentConfig(
         system_instruction='你是一個專業的分析達人',
         contents=[document]
@@ -261,7 +261,7 @@ cache = client.caches.create(
 )
 
 response = client.models.generate_content(
-    model="gemini-flash-latest",
+    model="gemini-3.7-flash",
     contents="請分析這個文件",
     config=types.GenerateContentConfig(cached_content=cache.name)
 )

@@ -11,9 +11,12 @@
 import os
 import gradio as gr
 from huggingface_hub import InferenceClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = InferenceClient(
-	api_key="========huggingface token========"
+	api_key=os.environ.get("HUGGINGFACE_TOKEN", "========huggingface token========")
 )
 
 with gr.Blocks(title="Example") as demo:
@@ -30,20 +33,24 @@ with gr.Blocks(title="Example") as demo:
     def generate_text(style:str,input_str:str):     
         
         if style=="口語化":
-            style = "請使用口語化的風格\n"
+            style_prompt = "請使用口語化的風格\n"
         elif style == "學術":
-            style = "請使用專業學術的風格\n"
+            style_prompt = "請使用專業學術的風格\n"
         elif style == "商業":
-            style = "請使用商業文章的風格\n"
+            style_prompt = "請使用商業文章的風格\n"
+        elif style == "專業":
+            style_prompt = "請使用專業風格\n"
         elif style == "條列式":
-            style = "請條列式重點\n"
+            style_prompt = "請條列式重點\n"
+        else:
+            style_prompt = f"請使用{style}風格\n"
 
-        style = "請摘要這些文章\n請使用繁體中文回答\n" + style
+        style_instruction = "請摘要這些文章\n請使用繁體中文回答\n" + style_prompt
         
         messages = [
             {
                 "role":"system",
-                "content":style
+                "content":style_instruction
             },
             {
                 "role": "user",
