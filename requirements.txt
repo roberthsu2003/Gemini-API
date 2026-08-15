@@ -3,7 +3,8 @@
 # 舊版 google-generativeai（genai.configure / GenerativeModel）已淘汰，請勿再使用
 google-genai>=1.0.0
 python-dotenv
-ipywidgets
+jupyterlab-lsp
+basedpyright
 
 # ========== 介面與網頁 ==========
 gradio

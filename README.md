@@ -11,12 +11,12 @@
 
 - **Python**：3.9+
 - **套件**：見 [requirements.txt](./requirements.txt)  
-  核心依賴：`google-genai`、`python-dotenv`、`ipywidgets`
+  核心依賴：`google-genai`、`python-dotenv`、`jupyterlab-lsp`、`basedpyright`
 
 安裝：
 
 ```bash
-pip install -U google-genai python-dotenv ipywidgets
+uv add google-genai python-dotenv jupyterlab-lsp basedpyright
 ```
 
 ---
