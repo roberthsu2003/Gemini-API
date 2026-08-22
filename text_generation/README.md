@@ -78,6 +78,27 @@ demo.launch(share=True)
 
 ![](./images/pic1.png)
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入 Gradio / Streamlit 介面</b></summary>
+
+**Gradio 介面改寫 Prompt：**
+```text
+請幫我將上述的 Zero-shot 文字生成範例改寫為美觀的 Gradio 應用：
+1. 使用 gr.Blocks 排版，左側放置問題輸入框與常見預設問題按鈕（gr.Examples），右側即時以 Markdown 呈現 Gemini 回答。
+2. 整合 client.interactions.create(model="gemini-3.7-flash", input=...)。
+3. 加入清除按鈕與送出時的 loading 指示器。
+```
+
+**Streamlit 介面改寫 Prompt：**
+```text
+請幫我將上述的 Zero-shot 文字生成範例改寫為 Streamlit 網頁應用：
+1. 使用 st.title 與 st.caption 建立頁面標題與簡介。
+2. 提供 st.chat_input 接收使用者輸入，並用 st.session_state 儲存問答結果。
+3. 呼叫 Gemini 3.7 Flash API 生成回覆，並以 st.markdown 渲染。
+4. 側邊欄提供快捷提問按鈕，點擊後自動填入問題並執行。
+```
+</details>
+
 ---
 
 ## 2. 思考設定 (Thinking with Gemini)
@@ -99,6 +120,26 @@ interaction = client.interactions.create(
 )
 print(interaction.output_text)
 ```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入思考深度控制介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述思考模式範例改寫為 Gradio 應用：
+1. 設計包含問題輸入框、thinking_level 單選按鈕（minimal, low, medium, high）的控制面板。
+2. 整合 Gemini Interactions API，將使用者選取的思考深度動態傳入 generation_config。
+3. 回覆區以 Markdown 呈現，並顯示當前所使用的思考深度。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述思考模式範例改寫為 Streamlit 應用：
+1. 側邊欄提供 st.select_slider 選擇思考深度（minimal, low, medium, high），並附上各等級說明。
+2. 主畫面提供 st.text_area 與 st.button。
+3. 按下生成時呼叫 Gemini 3.7 Flash 並顯示思考中狀態動畫（st.spinner），回覆完成後以 st.markdown 展示。
+```
+</details>
 
 ---
 
@@ -161,6 +202,26 @@ demo.launch(share=True)
 ```
 
 ![](./images/pic4.png)
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入文章總結與風格轉換介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述的文章總結與風格控制程式改寫為功能更完整的 Gradio 應用：
+1. 介面提供長文本輸入框（Multiline Textbox）、目標風格單選框（學術/商業/專業/口語化/條列式），並新增「目標語言（繁中/英文/日文）」下拉選單。
+2. 透過 Gemini Interactions API 的 system_instruction 設定角色與風格規則。
+3. 輸出區包含總結結果、字數統計及一鍵複製按鈕。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述文章總結程式改寫為 Streamlit 應用：
+1. 使用兩欄版面（st.columns）：左欄為原文輸入區（可貼上文字或上傳 txt 檔）與風格設定（st.segmented_control 或 st.radio），右欄為即時總結產出區。
+2. 使用 st.button("開始摘要") 觸發，並以 st.spinner 顯示處理進度。
+3. 生成後提供下載摘要文字檔按鈕（st.download_button）。
+```
+</details>
 
 ---
 
@@ -254,6 +315,26 @@ demo.launch()
 
 ![](./images/pic3.png)
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入多模態圖文辨識介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述多模態圖文辨識程式改寫為 Gradio 應用：
+1. 介面分為左右兩欄，左側提供圖片上傳元件（gr.Image）與預設提問選項（如「辨識圖中物體」、「翻譯圖中文字」、「描述場景」），右側為問題輸入框與 Markdown 分析結果展示。
+2. 整合 Gemini Interactions API 傳入 Base64 圖片與提示詞。
+3. 上傳新圖片時自動清空舊的回覆並提示使用者提問。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述多模態圖文辨識程式改寫為 Streamlit 應用：
+1. 使用 st.file_uploader 支援使用者上傳 JPG/PNG 圖片，並使用 st.image 即時預覽上傳圖片。
+2. 提供 st.text_input 讓使用者輸入針對該圖片的提問（預設為「請詳細分析這張圖片的內容」）。
+3. 將圖片轉為 Base64 後呼叫 Gemini 3.7 Flash Interactions API，並使用 st.chat_message 或 st.markdown 呈現圖文辨識結果。
+```
+</details>
+
 ---
 
 ## 5. 串流回應 (Streaming Responses)
@@ -336,6 +417,25 @@ demo.launch()
 ```
 
 ![](./images/pic5.png)
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入打字機串流效果介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為具有即時串流（Streaming / 打字機效果）的 Gradio 應用：
+1. 建立文字輸入框與風格選單，按下送出後呼叫 stream=True 的 client.interactions.create。
+2. 使用 Python generator 的 `yield` 語法，逐字更新輸出區的 Markdown 內容，實現流暢的打字機效果。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為支援打字機串流輸出的 Streamlit 應用：
+1. 使用 `st.write_stream` 或逐字迭代器（Generator）接收 Gemini API 串流事件。
+2. 當 event.delta.type == "text" 時 yield 文字內容，讓 Streamlit 前端以原生打字機動畫流暢輸出。
+3. 介面提供文章輸入與風格切換控制項。
+```
+</details>
 
 ---
 
@@ -430,6 +530,28 @@ demo.launch()
 
 ![](./images/pic6.png)
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入多輪對話聊天機器人介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述多輪對話程式改寫為 Gradio Chat 應用程式：
+1. 使用 `gr.ChatInterface` 或 `gr.Chatbot` 建立 ChatGPT 風格的聊天室介面。
+2. 整合 Gemini Interactions API 的伺服器端狀態維護功能（利用 `previous_interaction_id` 紀錄前一輪 ID）。
+3. 支援串流打字機回覆效果（在 fn 中使用 yield）。
+4. 包含「重設對話 / 清空歷史」按鈕，重設時將 last_interaction_id 清空為 None。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述多輪對話程式改寫為 Streamlit 聊天機器人（Chatbot）：
+1. 使用 `st.chat_message` 與 `st.chat_input` 構建現代化聊天介面。
+2. 使用 `st.session_state` 儲存對話訊息列表與 `last_interaction_id`。
+3. 呼叫 Gemini 3.7 Flash API 時帶入 `previous_interaction_id`，並支援 `stream=True` 即時輸出。
+4. 側邊欄提供「清空對話」按鈕，點擊後重設對話紀錄與 ID。
+```
+</details>
+
 ---
 
 ## 7. 無狀態對話 (Stateless Conversations)
@@ -478,9 +600,30 @@ interaction2 = client.interactions.create(
 print("第 2 輪：", interaction2.output_text)
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入自訂歷史管理介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述無狀態對話（store=False）範例改寫為 Gradio Chatbot：
+1. 在客戶端以 `gr.State` 維護對話步驟列表（steps）。
+2. 每次送出訊息時，呼叫 `client.interactions.create(store=False, input=history)`，並將模型回傳的 steps 加回 state 中。
+3. 支援查看與下載完整對話 JSON 結構。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述無狀態對話（store=False）範例改寫為 Streamlit 應用：
+1. 在 `st.session_state` 中完全掌控對話步驟歷史（steps / history）。
+2. 送出時以 `store=False` 呼叫 Gemini Interactions API，並展示聊天泡泡。
+3. 側邊欄提供「檢視底層對話 JSON 結構」展開區塊（st.expander + st.json），方便教學與觀察模型輸入輸出結構。
+```
+</details>
+
 ---
 
 ## 8. 專案範例 Notebook
 
 - [`quickstart.ipynb`](./quickstart.ipynb)：Interactions API 完整語法互動體驗
 - [`tripPlanner.ipynb`](./tripPlanner.ipynb)：旅遊規劃與長文本結構化轉型範例
+

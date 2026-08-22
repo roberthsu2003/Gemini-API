@@ -104,3 +104,16 @@ demo.launch()
 ```
 
 ![](./images/pic1.png)
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：將此物聯網燈光控制改寫為 Streamlit 介面</b></summary>
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述 Gradio 燈光與色溫控制應用程式改寫為 Streamlit 應用程式：
+1. 定義 `set_light_value(brightness: int, color_temp: str)` 函式與 Function Calling 配置。
+2. 主畫面提供文字輸入框（例如「請幫我把燈調到 80% 亮度，並且使用溫暖的黃光」）。
+3. 呼叫 Gemini 3.7 Flash 提取亮度數值與色溫設定。
+4. 使用 Streamlit 的 `st.slider` 動態呈現亮度數值（0~100），並繪製動態色塊（或使用 HTML/CSS 帶光暈效果的圓形燈泡元件）即時展示對應的色溫顏色（暖色/冷色/正常）。
+```
+</details>

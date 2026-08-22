@@ -72,6 +72,26 @@ json_structure = json.loads(json_str)  # 轉換成資料結構
 json_structure
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入食譜 JSON 視覺化介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「透過提示詞生成食譜 JSON」的程式改寫為 Gradio 應用：
+1. 提供輸入框讓使用者輸入想查詢的料理類型（如「中式料理」、「義大利麵」、「減脂餐」）。
+2. 呼叫 Gemini 3.7 Flash 產生符合 Recipe JSON 格式的內容。
+3. 介面同時以 `gr.JSON` 呈現結構化資料，並以 `gr.Dataframe` 或 `gr.Markdown` 呈現排版後的食譜清單。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 介面提供料理主題輸入框與數量拉桿（st.slider）。
+2. 呼叫 Gemini 3.7 Flash 生成 JSON，並用 json.loads 解析。
+3. 使用 `st.json` 呈現原始 JSON，並用 `st.expander` 逐一展示每道菜的食材清單。
+```
+</details>
+
 **範例2**
 - 取得台灣銀行牌告匯率
 - 取得牌告匯率的表格
@@ -152,6 +172,26 @@ def text_to_csv(csv_text:str):
 text_to_csv(result_text)
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入匯率爬蟲與即時表格展示介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「爬取台灣銀行牌告匯率並由 Gemini 轉換為 CSV」的程式改寫為 Gradio 應用：
+1. 介面包含「立即抓取牌告匯率」按鈕。
+2. 點擊後執行爬蟲與 Gemini 格式轉換，並將產出的 CSV 字串透過 pandas 載入，以 `gr.Dataframe` 呈現美觀的匯率表格。
+3. 提供 `gr.DownloadButton` 或 `gr.File` 讓使用者一鍵下載生成的 CSV 檔案。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 使用 `st.button("🔄 更新即時牌告匯率")` 觸發爬蟲與 Gemini CSV 轉換。
+2. 將結果轉換為 pandas DataFrame，並使用 `st.dataframe` 展示（支援排序與欄位搜尋）。
+3. 提供 `st.download_button` 供使用者下載當日匯率 CSV 檔案。
+```
+</details>
+
 
 ### 提供 json schema 給 model 配置(比較精準)
 
@@ -211,6 +251,26 @@ result = client.models.generate_content(
 json_structure = json.loads(result.text)
 json_structure
 ```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入 Pydantic 結構化資料生成介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述使用 Pydantic BaseModel 定義 response_schema 的 Gemini 程式改寫為 Gradio 應用：
+1. 介面提供文字輸入框（例如輸入「我想做 3 道低卡雞胸肉料理」）。
+2. 設定 response_schema=list[Recipe] 並獲取結構化輸出。
+3. 使用 `gr.Dataframe` 或 `gr.JSON` 呈現解析後的食譜名稱與食材份量清單。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 提供輸入框讓使用者描述想產生的食譜需求。
+2. 呼叫 Gemini API（帶入 Pydantic schema）取得 result.parsed。
+3. 以 Streamlit 卡片（st.container(border=True)）排版，每張卡片展示一道料理名稱與標籤化的食材清單。
+```
+</details>
 
 
 **將 model 輸出的 json 文字轉換為 python 的資料結構**
@@ -360,6 +420,18 @@ demo.launch()
 
 ![](./images/pic1.png)
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：將此匯率換算改寫為 Streamlit 介面</b></summary>
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述 Gradio 匯率試算應用程式改寫為 Streamlit 應用程式：
+1. 讀取 2025_01_29.csv 並透過 Gemini 結構化輸出取得幣別清單。
+2. 使用 `st.selectbox` 分別選擇「持有幣別」與「兌換幣別」，並使用 `st.number_input` 輸入兌換金額。
+3. 按下「計算匯率」按鈕後，呼叫 Gemini 3.7 Flash 進行換算，並以 `st.success` 與 `st.markdown` 呈現換算結果與計算公式細節。
+```
+</details>
+
 ### 使用列舉(enum)限定結果輸出
 
 在某些情況下，您可能希望模型從選項清單中選擇選項。為了實現此行為，您可以在配置設定中傳遞一個列舉。您可以在 `response_schema` 中任何地方使用列舉，列舉實際上是字串清單。
@@ -445,3 +517,24 @@ result = client.models.generate_content(
 )
 print(result.text)
 ```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入評分分類與統計介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述 Enum + Pydantic 食譜評分程式改寫為 Gradio 應用：
+1. 介面提供商品或主題輸入框（例如「10種熱門甜點」）。
+2. 調用帶有 Grade Enum 的 Schema 讓模型輸出結構化評分資料。
+3. 使用 `gr.Dataframe` 呈現表格，並根據 Grade 等級以不同顏色標示（如 a+ 標示綠色、f 標示紅色）。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述 Enum + Pydantic 程式改寫為 Streamlit 應用：
+1. 提供主題輸入框與數量設定，按下生成後呼叫 Gemini API 產出結構化評分資料。
+2. 將結果轉換為 DataFrame 並以 `st.dataframe` 展示。
+3. 使用 `st.bar_chart` 統計各評分等級（a+, a, b, c...）的數量分布長條圖。
+```
+</details>
+

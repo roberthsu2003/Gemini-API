@@ -71,3 +71,16 @@ demo.launch()
 
 ![](./images/pic1.png)
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：將此開源模型總結改寫為 Streamlit 介面</b></summary>
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述使用 Hugging Face InferenceClient 的開源模型總結程式改寫為 Streamlit 應用：
+1. 在側邊欄提供 Hugging Face Token 輸入框與開源模型名稱選擇（如 mistralai/Mistral-Nemo-Instruct-2407、meta-llama/Llama-3.1-8B-Instruct 等）。
+2. 主畫面提供文章貼上區與風格單選按鈕（學術/商業/專業/口語化/條列式）。
+3. 點擊「產生摘要」後調用 Hugging Face InferenceClient chat completion，並以 Streamlit 呈現結構化總結結果。
+```
+</details>
+
+

@@ -89,10 +89,31 @@ response = chat.send_message(function_response_part)
 print(response.text)
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入手動函式呼叫與狀態追蹤介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「手動管理 Function Calling 流程（關閉自動呼叫、捕捉 function_call、自訂執行與錯誤處理）」改寫為 Gradio 應用：
+1. 介面包含問題輸入框、執行流程狀態日誌區（gr.Code 或 gr.Textbox）、以及模型最終回覆 Markdown 區。
+2. 當模型回傳 function_call 時，在介面上顯示偵測到的函式名稱與引數 JSON。
+3. 執行函式後，將執行結果手動封裝為 Part.from_function_response 並送回模型，顯示完整的調用生命週期與最終回覆。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 主畫面提供自然語言問題輸入。
+2. 使用 `st.status` 或 `st.expander` 視覺化展示手動 Function Calling 每個階段（Step 1: 模型請求呼叫函式 -> Step 2: 本地端執行 API -> Step 3: 回傳結果給模型產生總結）。
+3. 包含例外處理演示，若 API 呼叫失敗時於介面顯示友善錯誤提示（st.error）。
+```
+</details>
+
 **回覆**
 
 ```
 200歐元在2024-12-04的匯率為1歐元兌1.6384澳元，因此200歐元可兌換327.68澳元。
 ```
+
 
 

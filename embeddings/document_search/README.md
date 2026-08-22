@@ -21,6 +21,27 @@ result = client.models.embed_content(
 print(result.embeddings[0].values)
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入語意搜尋與知識庫檢索介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述 Embedding 語意搜尋程式改寫為 Gradio 知識庫搜尋應用：
+1. 介面提供 CSV / TXT 文件上傳區，系統自動調用 `client.models.embed_content` 計算每筆文件的向量並建立索引。
+2. 提供「語意查詢輸入框」，使用者輸入任意自然語言問題後，將查詢轉為向量（task_type="RETRIEVAL_QUERY"）並計算餘弦相似度（Cosine Similarity）。
+3. 使用 `gr.Dataframe` 呈現 Top-K 相似度最高的文件段落與相似度分數。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 語意搜尋應用：
+1. 側邊欄支援使用者上傳 FAQ 或產品說明 CSV 檔，一鍵生成向量並快取在 `st.session_state`。
+2. 主畫面提供搜尋列（`st.text_input`），即時進行語意比對。
+3. 以卡片方式列出最相關的前 3 名結果，並以進度條（`st.progress`）視覺化展示相似度匹配百分比。
+```
+</details>
+
+
 ### 使用 gemini 提供的 `gemini-embedding-001` 建立的 embedding
 **注意:Gemini 嵌入對繁體中文的檢索效果一般，繁體中文語意搜尋建議搭配下方的多語 E5 模型評估**
 - [最簡單的範例](./document_search.ipynb)

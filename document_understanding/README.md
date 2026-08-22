@@ -26,6 +26,7 @@ Gemini API 支援 pdf 輸入，包含長文件,最高達3600頁。Gemini模型�
 - rtf - text/rtf
 
 每個文件頁面相當258tokens
+
 ### 透過internet取得pdf資料
 
 ```python
@@ -50,8 +51,28 @@ response = client.models.generate_content(
     ]
 )
 display(Markdown(response.text))
-
 ```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入遠端 PDF 摘要問答介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「透過網址讀取 PDF 並總結」的程式碼改寫為 Gradio 應用：
+1. 建立一個包含「PDF URL 輸入框」與「提問 / 摘要 Prompt 輸入框」的介面。
+2. 點擊按鈕後，使用 httpx 下載該 PDF，並調用 Gemini 3.7 Flash（以 Part.from_bytes 傳入 PDF 資料）進行分析。
+3. 輸出區以 Markdown 呈現文件總結或問答結果。
+4. 加入網路連線與下載錯誤的防呆提示（gr.Warning）。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 提供 st.text_input 讓使用者輸入任意網路 PDF 連結。
+2. 提供提問輸入框（預設提示為「總結這份文件的重點」）。
+3. 使用 st.button("開始分析") 觸發，並使用 st.spinner 下載與分析 PDF，最後以 st.markdown 完整呈現結果。
+```
+</details>
 
 **輸出結果**
 
@@ -86,7 +107,7 @@ display(Markdown(response.text))
 **總結:** AlphaFold 是一項重大突破，在蛋白質結構預測領域取得了顯著進展。它通過結合深度學習、基於距離的預測和有效的優化算法，為生物學研究帶來了更準確和可用的蛋白質結構預測方法。此外，這篇論文也展示了如何分析神經網絡學習到的複雜規則，幫助理解模型的工作原理。
 ```
 
-### 本地端pdf(檔案20MB以下)
+### 本地端 pdf(檔案20MB以下)
 
 ```python
 import os
@@ -112,6 +133,27 @@ response = client.models.generate_content(
 
 display(Markdown(response.text))
 ```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入 PDF 檔案上傳與智慧問答介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「本地 PDF 讀取與分析」程式改寫為 Gradio 網頁應用：
+1. 介面包含 `gr.File(file_types=['.pdf'])` 讓使用者直接從瀏覽器上傳 PDF 檔案。
+2. 提供自訂提問輸入框（例如「摘要本文重點」、「列出所有安全警告事項」）。
+3. 讀取上傳檔案的 binary 內容後，透過 `types.Part.from_bytes(data=..., mime_type='application/pdf')` 送入 Gemini 3.7 Flash。
+4. 使用 `gr.Markdown` 呈現排版精美的回覆。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 使用 `st.file_uploader("上傳 PDF 文件", type=['pdf'])` 接收使用者上傳檔案。
+2. 上傳完成後，顯示檔案大小與名稱，並提供提問輸入框與預設快捷問題按鈕。
+3. 讀取 PDF bytes 並調用 Gemini 3.7 Flash 進行解答，以 `st.chat_message("assistant")` 呈現結果。
+```
+</details>
 
 **輸出總結**
 
@@ -178,6 +220,26 @@ response = client.models.generate_content(
 )
 print(response.text)
 ```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入大型檔案 Files API 管理介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述使用 Gemini Files API 處理大型 PDF 的程式改寫為 Gradio 應用：
+1. 介面提供檔案上傳區，使用者上傳大型 PDF 後，後端自動調用 `client.files.upload` 上傳至 Google 伺服器並顯示 File URI 與上傳狀態。
+2. 提供多輪對話或提問輸入框，使用該上傳檔案的 Handle 進行多次連續問答，避免重複傳送大檔案。
+3. 支援刪除檔案按鈕（`client.files.delete`）以釋放雲端暫存空間。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述大型 PDF 處理程式改寫為 Streamlit 應用：
+1. 使用 `st.file_uploader` 接收大檔案，並將上傳至 Gemini Files API 後回傳的 `sample_pdf` 物件暫存在 `st.session_state`。
+2. 側邊欄顯示檔案狀態與大小。
+3. 主畫面使用聊天介面（`st.chat_message`），讓使用者對該份大文件進行多輪連續深度問答。
+```
+</details>
 
 **輸出**
 
@@ -271,9 +333,29 @@ print(response.text)
 
 > 提示：內容快取(context caching)適合同一份大型文件要重複提問的情境，可省下重複傳送文件的 token 費用。
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入 Context Caching 快取問答介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述 Context Caching 程式改寫為 Gradio 網頁應用：
+1. 介面提供「建立快取」按鈕：上傳 PDF 並建立 cache，在畫面上顯示 cache.name 與過期時間。
+2. 建立快取後解鎖聊天問答輸入框，每次提問皆透過 `cached_content=cache.name` 查詢。
+3. 在介面上即時顯示每次查詢的 token 消耗統計（包含 cached_content_token_count 與節省費用提示）。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述 Context Caching 程式改寫為 Streamlit 應用：
+1. 在側邊欄提供 PDF 上傳並一鍵建立 Gemini Context Cache（存於 st.session_state）。
+2. 在主畫面以聊天室形式進行對話，使用該快取加速推論並降低 token 成本。
+3. 使用 st.metric 呈現目前省下的快取 Token 數量（cached_content_token_count）。
+```
+</details>
+
 **輸出**
 
-```pythonn
+```python
 prompt_token_count: 12603
 candidates_token_count: 602
 total_token_count: 13205
@@ -316,4 +398,3 @@ cached_content_token_count: 12598
 
 這份使用說明書是一份質量較高的文件，它結構清晰，內容完整，圖文並茂，能夠有效地指導使用者正確使用和保養空調。雖然有些圖片質量和文字翻譯可能存在不足，但並不影響其整體的实用价值。  如果可以提供原始的PDF文件，分析結果會更加準確。
 ```
-

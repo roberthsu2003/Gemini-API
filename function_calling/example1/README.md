@@ -168,11 +168,33 @@ response = chat.send_message('今日100美金對換澳幣是多少錢?')
 print(response.text)
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入即時匯率 Function Calling 對話介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「透過 Gemini 自動呼叫外部匯率 API (Function Calling)」的程式改寫為 Gradio 聊天機器人：
+1. 定義 get_exchange_rate 函式並註冊到 Gemini tools。
+2. 使用 `gr.ChatInterface` 建立聊天介面。
+3. 使用者可以使用自然語言詢問即時國際匯率（如「現在 500 歐元換日幣是多少？」、「昨天 100 美金換台幣是多少？」）。
+4. 介面同時提示使用者當前模型會透過 Function Calling 自動取得即時資料。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 整合 get_exchange_rate 工具並建立 client.chats.create 對話實例。
+2. 使用 `st.chat_message` 與 `st.chat_input` 構建互動式匯率小助手。
+3. 側邊欄提供常用貨幣快速換算提問範例按鈕，點擊後自動送入對話。
+```
+</details>
+
 **輸出**
 
 ```
 今日 100 美元可兌換 160.7 澳元。
 ```
+
 
 
 

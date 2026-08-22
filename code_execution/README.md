@@ -36,6 +36,26 @@ for part in response.candidates[0].content.parts:
         print("執行結果:\n", part.code_execution_result.output)
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入程式碼執行與即時結果展示介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述 Gemini Code Execution 程式改寫為 Gradio 應用：
+1. 介面提供數學/邏輯計算問題輸入框（如「計算前 100 個斐波那契數中的質數」）。
+2. 啟用 tools=[types.Tool(code_execution=types.ToolCodeExecution())]。
+3. 介面分別展示三個區塊：(1) 模型文字說明、(2) 模型生成的 Python 程式碼區（帶語法高亮）、(3) 程式碼即時執行輸出的 stdout 結果。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 提供計算問題輸入框與執行按鈕。
+2. 呼叫 Gemini 3.7 Flash 並解析 candidates[0].content.parts。
+3. 使用 `st.code` 顯示模型自行編寫的 Python 程式碼，使用 `st.info` 呈現執行結果，並以 `st.markdown` 呈現最終推論結論。
+```
+</details>
+
 ## chat內使用code execution
 
 ```python
@@ -58,6 +78,26 @@ response = chat.send_message(
 
 print(response.text)
 ```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入支援 Code Execution 的 Chat 介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述在 Chat 中啟用 Code Execution 的程式改寫為 Gradio Chatbot 應用：
+1. 使用 `gr.ChatInterface` 建立對話介面。
+2. 後端建立具備 code_execution 工具的 client.chats.create 實例。
+3. 使用者可連續提問複雜數據分析或計算問題，模型自動編寫並運行程式碼後回傳結果。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 對話介面：
+1. 在 `st.session_state` 中維護 `client.chats.create` 物件與訊息歷史。
+2. 使用 `st.chat_input` 讓使用者進行多輪對話，每次送出時呼叫 `chat.send_message`。
+3. 支援展示對話中模型產生的可執行程式碼與運行結果。
+```
+</details>
 
 **台灣銀行匯率換算**
 
@@ -94,6 +134,26 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入自然語言匯率精準計算介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「透過 Code Execution 執行精準匯率計算」的程式改寫為 Gradio 應用：
+1. 介面提供自然語言換匯提問輸入框（如「我有 50000 日圓想換成歐元是多少錢？」）。
+2. 將牌告匯率 CSV 作為 system_instruction，並啟用 code_execution 工具，確保模型透過精確的 Python 程式碼計算而非幻覺估算。
+3. 介面呈現計算過程、執行的 Python 運算式與最終兌換金額。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 載入 CSV 匯率表並注入 system_instruction。
+2. 主畫面提供自然語言問題輸入框與常見提問範例按鈕。
+3. 按下計算後，以 Streamlit 呈現模型調用 Code Execution 精確計算的過程與結果。
+```
+</details>
+
 **輸出範例**：
 
 ```markdown
@@ -121,4 +181,5 @@ usd_amount=6737.481031866464
 
 因此，10000 加拿大幣大約可以換成 6737.48 美金。
 ```
+
 

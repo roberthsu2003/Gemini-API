@@ -57,6 +57,32 @@ interaction = client.interactions.create(
 display(Markdown(interaction.output_text))
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入 Gradio / Streamlit 介面</b></summary>
+
+> 您可以將以下 Prompt 複製給 AI 助手，快速將本範例轉化為 Web 應用程式：
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述的 Gemini 基本文字生成 Python 程式碼改寫為 Gradio 網頁應用程式：
+1. 使用 `gr.Blocks` 建立介面，包含一個文字輸入框（Multiline Textbox）與「送出」按鈕。
+2. 使用 `gr.Markdown` 呈現模型的回覆。
+3. 整合 `client.interactions.create(model="gemini-3.7-flash", input=...)` 邏輯。
+4. 加入問題範例選單（gr.Examples）供使用者點選測試。
+5. 啟動時請啟用 share=True。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述的 Gemini 基本文字生成 Python 程式碼改寫為 Streamlit 網頁應用程式：
+1. 使用 `st.set_page_config` 與 `st.title` 建立美觀標題與說明。
+2. 在側邊欄（st.sidebar）加入 API Key 設定輸入框（若環境變數未設定時可手動輸入）。
+3. 使用 `st.text_area` 接收使用者問題，並使用 `st.button` 觸發生成。
+4. 使用 `st.spinner("Gemini 正在思考與生成中...")` 提示載入狀態。
+5. 將生成結果使用 `st.markdown` 格式化呈現。
+```
+</details>
+
 ### 關於「思考」功能（Thinking with Gemini）
 
 Gemini 3 世代模型（如 `gemini-3.7-flash`）預設會啟用思考模式。您可以透過 `generation_config` 中的 **`thinking_level`**（`minimal` / `low` / `medium` / `high`）控制思考深度：
@@ -77,6 +103,26 @@ print(interaction.output_text)
 ```
 
 > 注意：官方建議 `temperature` 維持預設 `1.0`（調動可能導致重複輸出或效能下降）。
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入思考深度控制介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述包含 thinking_level 的 Gemini 程式碼改寫為 Gradio 應用程式：
+1. 介面包含問題輸入框、`gr.Radio` 或 `gr.Dropdown` 讓使用者選擇思考深度（minimal, low, medium, high）。
+2. 使用者點選送出後，將選取的 thinking_level 傳入 generation_config。
+3. 使用 `gr.Markdown` 顯示生成結果。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述思考設定程式碼改寫為 Streamlit 應用程式：
+1. 在側邊欄使用 `st.select_slider` 或 `st.radio` 讓使用者調整「思考深度（Thinking Level）」（選項：minimal, low, medium, high）。
+2. 主畫面提供問題輸入區與送出按鈕。
+3. 呼叫 Gemini 3.7 Flash 並套用選取的 thinking_level，以 `st.spinner` 動態提示，最後以 `st.markdown` 渲染回覆。
+```
+</details>
 
 ---
 
