@@ -1,58 +1,50 @@
 import os
 import gradio as gr
 from google import genai
-from google.genai import types
-
 from dotenv import load_dotenv
 
 load_dotenv()
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-with gr.Blocks(title="Example") as demo:
-    gr.Markdown("# Text To Summarization(總結)")
-    style_radio = gr.Radio(['學術','商業','專業','口語化','條列式'],label='風格',info="請選擇總結風格",value='口語化')
+with gr.Blocks(title="Streaming Text Summarization") as demo:
+    gr.Markdown("# Text Streaming Summarization (即時串流總結)")
+    
+    style_radio = gr.Radio(
+        ['口語化', '條列式', '學術', '商業', '專業'],
+        label='風格選擇',
+        info="請選擇欲生成的風格",
+        value='口語化'
+    )
     input_text = gr.Textbox(
-        label="請輸入文章",
-        lines=10,
+        label="請輸入文章內容",
+        placeholder="貼上或輸入欲總結的長篇文章...",
+        lines=8,
         submit_btn=True
-        )
-    output_md = gr.Markdown()
+    )
+    output_md = gr.Markdown(label="即時產出")
 
-    @input_text.submit(inputs=[style_radio,input_text], outputs=[output_md])
-    def generate_text(style:str,input_str:str):
-        if style=="口語化":
-            style_prompt = "請使用口語化的風格\n"
-        elif style == "學術":
-            style_prompt = "請使用專業學術的風格\n"
-        elif style == "商業":
-            style_prompt = "請使用商業文章的風格\n"
-        elif style == "專業":
-            style_prompt = "請使用專業風格\n"
-        elif style == "條列式":
-            style_prompt = "請條列式重點\n"
-        else:
-            style_prompt = f"請使用{style}風格\n"
+    @input_text.submit(inputs=[style_radio, input_text], outputs=[output_md])
+    def generate_streaming_text(style: str, input_str: str):
+        if not input_str.strip():
+            gr.Warning("請輸入內容！")
+            return
 
         stream = client.interactions.create(
             model="gemini-3.7-flash",
             system_instruction=f"""
-            你是一位文章的總結專家,也是一位繁體中文的高手。
-            你的任務是:
-            1. 請將內容`總結`
-            2. {style_prompt}
+            你是一位文章總結專家，請將使用者輸入的內容進行【{style}】風格的重點總結，並一律使用繁體中文。
             """,
             input=input_str,
             stream=True
         )
 
         result_text = ""
-
+        header = f"**【風格：{style}（串流生成中...）】**\n\n### 總結內容：\n"
         for event in stream:
             if event.event_type == "step.delta" and event.delta.type == "text":
                 result_text += event.delta.text
-                yield( f"{style_prompt}\n\n### 總結內容如下:\n" + result_text)
+                yield header + result_text
 
-
-
-demo.launch()
+if __name__ == "__main__":
+    demo.launch()
