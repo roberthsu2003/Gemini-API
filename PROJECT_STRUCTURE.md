@@ -60,9 +60,14 @@ Gemini-API/
 - `organ.jpg`：樂器分類範例圖片
 
 ### code_execution
-- `README.md`：code execution 啟用方式、Chat 內使用、匯率範例
-- `lesson1.ipynb`、`demo1.ipynb`～`demo4.ipynb`、`demo2.py`
-- `2025_01_29.csv`：匯率範例資料
+- `README.md`：程式碼執行完整教學（涵蓋數學運算、多輪對話、圖片縮放檢驗、CSV 數據計算、Matplotlib 圖表繪製與聯網整合）
+- `math_solver.py`：數學質數計算與程式碼執行歷程解析
+- `currency_calculator.py`：載入 CSV 匯率表並透過 Python 進行跨幣別換匯精確計算
+- `matplotlib_plotter.py`：Matplotlib 圖表動態生成並儲存 inline 圖片
+- `image_zoom_inspection.py`：Gemini 3 圖片程式碼局部裁切縮放與視覺分析
+- `math_and_code_execution.ipynb`：程式碼執行基礎與 Chat 整合筆記本
+- `currency_calculator.ipynb`：牌告匯率 CSV 程式碼計算筆記本
+- `2025_01_29.csv`：匯率範例資料檔
 
 ### function_calling
 - `README.md`：函式呼叫完整教學（涵蓋 4 步驟標準流程、平行呼叫、組合式決策、模式控制、聯網混合與多模態回傳）

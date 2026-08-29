@@ -155,8 +155,11 @@ print(interaction.output_text)
 - [`lesson1.ipynb`](./structure_output/lesson1.ipynb)：結構化輸出完整互動式教學筆記本
 
 ### [4. 程式碼執行 (code_execution)](./code_execution)
-- [`demo2.py`](./code_execution/demo2.py)：啟用 Code Execution 進行即時數學運算與驗證
-- [`lesson1.ipynb`](./code_execution/lesson1.ipynb)：程式碼生成與沙盒執行基礎教學
+- [`math_solver.py`](./code_execution/math_solver.py)：數學運算與演算法求解歷程
+- [`currency_calculator.py`](./code_execution/currency_calculator.py)：載入 CSV 匯率表透過 Python 進行跨幣別換匯計算
+- [`matplotlib_plotter.py`](./code_execution/matplotlib_plotter.py)：Matplotlib 圖表動態生成並接收輸出圖檔
+- [`image_zoom_inspection.py`](./code_execution/image_zoom_inspection.py)：Gemini 3 圖片程式碼局部裁切縮放與視覺檢測
+- [`math_and_code_execution.ipynb`](./code_execution/math_and_code_execution.ipynb)：程式碼執行與 Chat 互動教學筆記本
 
 ### [5. 函式呼叫 (function_calling)](./function_calling)
 - [`meeting_scheduler.py`](./function_calling/meeting_scheduler.py)：會議預約外部動作執行（標準 4 步驟流程）
