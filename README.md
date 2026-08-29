@@ -120,53 +120,77 @@ print(interaction.output_text)
 
 ---
 
-## 📚 專案核心章節導覽
+## 📚 專案核心章節導覽（推薦學習順序）
 
-| 章節 | 核心主題 | 重點內容與範例 | 目錄路徑 |
-|---|---|---|---|
-| **0. 何謂 AI Agent** | 代理觀念與架構 | Prompt chaining、Routing、Parallelization、Evaluator-optimizer 等設計模式 | [何謂AIAgent](./何謂AIAgent) |
-| **1. 文字生成** | Text Generation | 單輪生成、即時串流 (`step.delta`)、狀態化多輪對話、多模態圖文分析 | [text_generation](./text_generation) |
-| **2. 文件理解** | Document Understanding | 本機/遠端 PDF 文件解析、長篇文件摘要、表格萃取與快取機制 | [document_understanding](./document_understanding) |
-| **3. 結構化輸出** | Structured Outputs | JSON Schema 強制約束、Pydantic / Zod 型別驗證、多態 (`Union`)、遞迴樹狀結構與串流 JSON | [structure_output](./structure_output) |
-| **4. 程式碼執行** | Code Execution | 內建 Python 執行沙盒、數據運算、演算法驗證與圖表繪製 | [code_execution](./code_execution) |
-| **5. 函式呼叫** | Function Calling | 4 步驟標準流程、平行呼叫、組合式鏈結、模式控制 (`AUTO`/`ANY`)、聯網工具混合與多模態回傳 | [function_calling](./function_calling) |
-| **6. 向量檢索** | Embeddings & Search | `gemini-embedding-001`、多語 E5、ChromaDB 向量資料庫與語意搜尋 | [embeddings/document_search](./embeddings/document_search) |
-| **7. 開源模型** | Open Source Models | Hugging Face Serverless Inference API 整合實作 | [開源模型](./開源模型) |
+本教學專案依據學生的認知學習曲線，分為五大進階階段：
 
 ---
 
-## 📂 各章節核心實作檔案速查
+### 🔰 第一階段：基礎互動與多模態體驗（建立成就感）
 
-### [1. 文字生成 (text_generation)](./text_generation)
-- [`zero_shot.py`](./text_generation/zero_shot.py)：零樣本文字生成
-- [`text_streaming.py`](./text_generation/text_streaming.py)：即時 Token 串流輸出
-- [`chat.py`](./text_generation/chat.py)：伺服器端狀態化多輪對話
-- [`image_text.py`](./text_generation/image_text.py)：多模態圖文綜合理解
-- [`text_to_summarization.py`](./text_generation/text_to_summarization.py)：長文本重點摘要
+#### [1. 文字生成 (text_generation)](./text_generation)
+使用 Interactions API 進行單輪生成、Thinking 思考層級控制、系統指示、多模態圖文理解與狀態化多輪串流對話。
+- [`zero_shot.py`](./text_generation/zero_shot.py)：零樣本文字生成與 Gradio 介面
+- [`text_streaming.py`](./text_generation/text_streaming.py)：即時 Token 串流輸出（SSE 事件）
+- [`chat.py`](./text_generation/chat.py)：伺服器端狀態化多輪對話 (`previous_interaction_id`)
+- [`image_text.py`](./text_generation/image_text.py)：多模態圖文綜合理解與問答
+- [`text_to_summarization.py`](./text_generation/text_to_summarization.py)：長文本重點摘要與語氣風格控制
+- [`text_generation_quickstart.ipynb`](./text_generation/text_generation_quickstart.ipynb)：Interactions API 完整語法互動筆記本
+- [`trip_planner_system_instruction.ipynb`](./text_generation/trip_planner_system_instruction.ipynb)：旅遊規劃與 System Instruction 實戰
 
-### [2. 文件理解 (document_understanding)](./document_understanding)
+#### [2. 圖像生成 (image_generation)](./image_generation)
+使用 Google Imagen 3 (`imagen-3.0-generate-002`) 與 `gemini-2.5-flash-image` 進行 Text-to-Image 生成，支援比例自訂與 Prompt 智慧擴寫產圖工作流。
+- [`text_to_image_imagen.py`](./image_generation/text_to_image_imagen.py)：Imagen 3 基礎文字生成高品質圖片
+- [`aspect_ratio_control.py`](./image_generation/aspect_ratio_control.py)：自訂長寬比例（16:9、9:16、1:1）生成範例
+- [`gemini_flash_image.py`](./image_generation/gemini_flash_image.py)：Gemini 2.5 Flash Image 多模態圖像生成
+- [`prompt_enhancer_and_generator.py`](./image_generation/prompt_enhancer_and_generator.py)：Gemini 擴寫提示詞 ➔ 自動調用 Imagen 生成圖片的一條龍工作流
+
+#### [3. 文件理解 (document_understanding)](./document_understanding)
+原生多模態 PDF 視覺理解（支援達 1000 頁 / 50MB），涵蓋 Inline 傳遞、Files API 上傳、跨文件比對、結構化萃取與 Context Caching 快取加速。
 - [`inline_pdf_summary.py`](./document_understanding/inline_pdf_summary.py)：Inline PDF 文件重點摘要
 - [`files_api_pdf_chat.py`](./document_understanding/files_api_pdf_chat.py)：Files API 上傳大型 PDF 並進行多輪對話
 - [`remote_pdf_analysis.py`](./document_understanding/remote_pdf_analysis.py)：遠端下載 PDF 論文進行深度研讀
 - [`multi_pdf_comparison.py`](./document_understanding/multi_pdf_comparison.py)：多份 PDF 跨文件比對與表格輸出
 - [`pdf_structured_extraction.py`](./document_understanding/pdf_structured_extraction.py)：結合 Pydantic 提取結構化規格資訊
-- [`pdf_context_caching.py`](./document_understanding/pdf_context_caching.py)：Context Caching 快取長篇文件加速與節省成本
+- [`pdf_context_caching.py`](./document_understanding/pdf_context_caching.py)：Context Caching 快取長篇文件加速與節省 75% 成本
 - [`pdf_understanding_tutorial.ipynb`](./document_understanding/pdf_understanding_tutorial.ipynb)：PDF 文件理解互動教學筆記本
+- [`csv_document_caching.ipynb`](./document_understanding/csv_document_caching.ipynb)：CSV 數據快取與問答筆記本
 
-### [3. 結構化輸出 (structure_output)](./structure_output)
+---
+
+### ⚙️ 第二階段：工程化與資料約束（應用開發必備）
+
+#### [4. 結構化輸出 (structure_output)](./structure_output)
+強制約束模型輸出嚴格符合 JSON Schema 或 Pydantic 模型，涵蓋條件多態 (`anyOf`/`Union`)、遞迴樹狀結構、串流 JSON 與 Enum 列舉。
 - [`recipe_extractor.py`](./structure_output/recipe_extractor.py)：Pydantic 基礎資料萃取（Interactions API）
 - [`advanced_schemas.py`](./structure_output/advanced_schemas.py)：條件多態結構 (`anyOf`/`Union`)、遞迴組織架構圖與串流 JSON
 - [`currency_exchange_gradio.py`](./structure_output/currency_exchange_gradio.py)：牌告匯率結構化萃取與 Gradio 試算介面
 - [`lesson1.ipynb`](./structure_output/lesson1.ipynb)：結構化輸出完整互動式教學筆記本
+- [`exchange_rate_extraction.ipynb`](./structure_output/exchange_rate_extraction.ipynb)：牌告匯率網頁擷取與結構化轉換
+- [`exchange_rate_to_csv.ipynb`](./structure_output/exchange_rate_to_csv.ipynb)：牌告匯率擷取並儲存為 CSV
 
-### [4. 程式碼執行 (code_execution)](./code_execution)
-- [`math_solver.py`](./code_execution/math_solver.py)：數學運算與演算法求解歷程
+---
+
+### 🛠️ 第三階段：外掛能力與工具整合（突破 LLM 限制）
+
+#### [5. 聯網搜尋 (ground_search)](./ground_search)
+啟用 Google Search Grounding 讓模型自主聯網搜尋最新即時新聞、賽事與股價，自動標註來源網址，並可與 Code Execution / 結構化輸出混合使用。
+- [`basic_search.py`](./ground_search/basic_search.py)：基礎 Google Search 聯網搜尋
+- [`search_citations.py`](./ground_search/search_citations.py)：解析搜尋步驟與引用來源網址 (Sources & Citations)
+- [`search_with_code_execution.py`](./ground_search/search_with_code_execution.py)：Google Search 搜尋即時數據 + Python 運算混合實戰
+- [`search_structured_output.py`](./ground_search/search_structured_output.py)：Google Search 搜尋即時資訊 + Pydantic 結構化提取實戰
+
+#### [6. 程式碼執行 (code_execution)](./code_execution)
+模型自主在 Google 託管的 Python 安全沙盒中編寫並執行程式碼，解決算術幻覺、進行 CSV 運算、Matplotlib 圖表動態繪製與 Gemini 3 圖片局部裁切縮放。
+- [`math_solver.py`](./code_execution/math_solver.py)：數學運算與質數演算法求解歷程
 - [`currency_calculator.py`](./code_execution/currency_calculator.py)：載入 CSV 匯率表透過 Python 進行跨幣別換匯計算
 - [`matplotlib_plotter.py`](./code_execution/matplotlib_plotter.py)：Matplotlib 圖表動態生成並接收輸出圖檔
 - [`image_zoom_inspection.py`](./code_execution/image_zoom_inspection.py)：Gemini 3 圖片程式碼局部裁切縮放與視覺檢測
 - [`math_and_code_execution.ipynb`](./code_execution/math_and_code_execution.ipynb)：程式碼執行與 Chat 互動教學筆記本
+- [`currency_calculator.ipynb`](./code_execution/currency_calculator.ipynb)：牌告匯率 CSV 程式碼計算筆記本
 
-### [5. 函式呼叫 (function_calling)](./function_calling)
+#### [7. 函式呼叫 (function_calling)](./function_calling)
+讓模型連接外部 API 與工具，涵蓋 4 步驟標準流程、平行呼叫、組合式鏈結、模式控制 (`AUTO`/`ANY`/`NONE`)、Google Search 聯網混合與多模態回傳。
 - [`meeting_scheduler.py`](./function_calling/meeting_scheduler.py)：會議預約外部動作執行（標準 4 步驟流程）
 - [`weather_assistant.py`](./function_calling/weather_assistant.py)：外部即時資料查詢與解析
 - [`parallel_function_calling.py`](./function_calling/parallel_function_calling.py)：多設備平行呼叫與批量結果回傳
@@ -175,24 +199,32 @@ print(interaction.output_text)
 - [`multi_function_calling.ipynb`](./function_calling/multi_function_calling.ipynb)：多函式自動路由與執行
 - [`chat_function_history.ipynb`](./function_calling/chat_function_history.ipynb)：對話歷史與函式呼叫整合
 
-### [6. 向量檢索 (embeddings)](./embeddings/document_search)
+---
+
+### 🧠 第四階段：企業級記憶與 RAG 檢索（海量資料庫）
+
+#### [8. 向量檢索 (embeddings)](./embeddings/document_search)
+將文字/多模態內容轉為語意向量，涵蓋 `gemini-embedding-001`、多模態 `gemini-embedding-2`、Matryoshka (MRL) 維度縮減、多語 E5 與 ChromaDB 向量庫整合。
 - [`gemini_semantic_similarity.py`](./embeddings/document_search/gemini_semantic_similarity.py)：文本向量嵌入與相似度矩陣
 - [`gemini_document_retrieval.py`](./embeddings/document_search/gemini_document_retrieval.py)：知識庫非對稱語意檢索 (Top-K)
 - [`dimension_reduction.py`](./embeddings/document_search/dimension_reduction.py)：Matryoshka 向量維度縮減 (3072 ➔ 768)
 - [`document-search-e5.py`](./embeddings/document_search/document-search-e5.py)：Multilingual-E5 開源繁中向量模型檢索
 - [`gemini_embedding_tutorial.ipynb`](./embeddings/document_search/gemini_embedding_tutorial.ipynb)：Gemini 向量嵌入與語意相似度互動教學
+- [`pretrain_query_chromaDb/`](./embeddings/document_search/pretrain_query_chromaDb)：ChromaDB 向量資料庫實戰範例
 
-### [7. 聯網搜尋 (ground_search)](./ground_search)
-- [`basic_search.py`](./ground_search/basic_search.py)：基礎 Google Search 聯網搜尋
-- [`search_citations.py`](./ground_search/search_citations.py)：解析搜尋步驟與引用來源網址
-- [`search_with_code_execution.py`](./ground_search/search_with_code_execution.py)：Google Search 搜尋與 Python 運算混合實戰
-- [`search_structured_output.py`](./ground_search/search_structured_output.py)：Google Search 搜尋與 Pydantic 結構化提取實戰
+---
 
-### [8. 圖像生成 (image_generation)](./image_generation)
-- [`text_to_image_imagen.py`](./image_generation/text_to_image_imagen.py)：Imagen 3 基礎文字生成高品質圖片
-- [`aspect_ratio_control.py`](./image_generation/aspect_ratio_control.py)：自訂長寬比例（16:9、9:16、1:1）生成範例
-- [`gemini_flash_image.py`](./image_generation/gemini_flash_image.py)：Gemini 2.5 Flash Image 多模態圖像生成
-- [`prompt_enhancer_and_generator.py`](./image_generation/prompt_enhancer_and_generator.py)：Gemini 擴寫提示詞 ➔ 自動調用 Imagen 生成圖片的一條龍工作流
+### 🚀 第五階段：綜合架構與生態拓展（融會貫通）
+
+#### [9. 何謂 AI Agent (何謂AIAgent)](./何謂AIAgent)
+代理觀念與工作流設計模式，探討 LLM 工作流與自主代理人的本質區別。
+- 涵蓋設計模式：Prompt chaining、Routing、Parallelization、Orchestrator-workers、Evaluator-optimizer
+- 核心手冊：[`README.md`](./何謂AIAgent/README.md)
+
+#### [10. 開源模型 (開源模型)](./開源模型)
+整合 Hugging Face Serverless Inference API，調用開源大語言模型（如 Mistral-Nemo-Instruct）進行文字生成與摘要任務。
+- [`text_to_summarization.py`](./開源模型/text_to_summarization.py)：Hugging Face 模型文字摘要實作
+- [`test.ipynb`](./開源模型/test.ipynb)：開源模型調用測試筆記本
 
 ---
 
@@ -212,17 +244,6 @@ print(interaction.output_text)
 - 📑 **評測與向量檔**：
   - [`Embeddings模型評測.xlsx`](./embeddings/document_search/Embeddings模型評測.xlsx)（繁體中文 Embedding 效果評測表）
   - [`embeddings.pkl`](./embeddings/document_search/pretrain_and_query/embeddings.pkl)（預先計算之向量庫檔案）
-
----
-
-## 🔗 官方參考文件
-
-- [Google AI Studio 實驗室](https://aistudio.google.com/)
-- [Gemini API 官方開發者文件](https://ai.google.dev/gemini-api/docs)
-- [Interactions API 指南](https://ai.google.dev/gemini-api/docs/interactions)
-- [Structured Outputs 指南](https://aistudio.google.com/docs/structured-output)
-- [Function Calling 指南](https://aistudio.google.com/docs/function-calling)
-- [Google GenAI Python SDK (GitHub)](https://github.com/googleapis/python-genai)
 
 ---
 

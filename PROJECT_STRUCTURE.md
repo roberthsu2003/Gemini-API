@@ -8,35 +8,34 @@
 
 | 檔案 | 說明 |
 |------|------|
-| `README.md` | 專案總覽、環境設定、章節導覽 |
+| `README.md` | 專案總覽、環境設定、五大學習階段導覽與檔案速查 |
 | `requirements.txt` | Python 依賴（核心與選用已分區註解） |
 | `PROJECT_STRUCTURE.md` | 本檔案，專案結構說明 |
 
 ---
 
-## 章節目錄概覽
+## 章節目錄概覽（依推薦學習路徑）
 
 ```
 Gemini-API/
-├── 何謂AIAgent/          # AI 代理與工作流概念
-├── text_generation/      # 1. 文字生成（單輪、串流、Chat、多模態）
-├── document_understanding/  # 2. 文件理解（PDF 等）
-├── structure_output/     # 3. 結構化輸出（JSON schema）
-├── code_execution/       # 4. 程式碼產生與執行
-├── function_calling/     # 5. 函式呼叫（含 Gradio 範例）
-├── embeddings/           # 6. Embeddings 與語意搜尋
+├── text_generation/          # 1. 文字生成（單輪、串流、Chat、Thinking）
+├── image_generation/         # 2. 圖像生成（Imagen 3、比例控制、多模態）
+├── document_understanding/   # 3. 文件理解（PDF、Files API、快取）
+├── structure_output/        # 4. 結構化輸出（Pydantic、JSON Schema）
+├── ground_search/           # 5. 聯網搜尋（Google Search 接地、事實查核）
+├── code_execution/          # 6. 程式碼執行（Python 沙盒、Matplotlib）
+├── function_calling/        # 7. 函式呼叫（外部 API、多工具協同）
+├── embeddings/              # 8. 向量檢索（語意搜尋、ChromaDB）
 │   └── document_search/
-└── 開源模型/             # 7. 非 Gemini 模型（如 Hugging Face）
+├── 何謂AIAgent/             # 9. AI 代理與工作流概念
+└── 開源模型/                # 10. 開源大語言模型（Hugging Face）
 ```
 
 ---
 
 ## 各章節重點檔案
 
-### 何謂AIAgent
-- `README.md`：工作流類型（Prompt chaining、Routing、Parallelization 等）、Agent 概念與參考影片
-
-### text_generation
+### 1. text_generation (文字生成)
 - `README.md`：文字生成完整指南（涵蓋 Interactions API、Thinking 思考控制、System Instructions、多模態、即時串流、多輪狀態對話與最佳實踐）
 - `zero_shot.py`：Zero-shot 文字生成與 Gradio 互動介面
 - `text_streaming.py`：即時打字機串流生成（SSE 事件監聽）
@@ -45,8 +44,16 @@ Gemini-API/
 - `text_to_summarization.py`：文章摘要與語氣風格控制
 - `text_generation_quickstart.ipynb`：Interactions API 快速入門互動筆記本
 - `trip_planner_system_instruction.ipynb`：旅遊規劃與系統指示詞筆記本
+- `organ.jpg`、`bear.jpg`、`plant1.jpg` ~ `plant3.webp`：圖文問答範例圖片
 
-### document_understanding
+### 2. image_generation (圖像生成)
+- `README.md`：Imagen 3 與多模態圖像生成教學（涵蓋 Text-to-Image、長寬比控制、gemini-2.5-flash-image 與 Prompt 擴寫產圖工作流）
+- `text_to_image_imagen.py`：Imagen 3 基礎文字生成高品質圖片
+- `aspect_ratio_control.py`：自訂長寬比例（16:9、9:16、1:1）生成範例
+- `gemini_flash_image.py`：Gemini 2.5 Flash Image 多模態圖像生成
+- `prompt_enhancer_and_generator.py`：Gemini 擴寫提示詞 ➔ 自動調用 Imagen 生成圖片的一條龍工作流
+
+### 3. document_understanding (文件理解)
 - `README.md`：PDF 文件理解完整教學（涵蓋 Inline PDF、Files API、URL 遠端載入、多文件比對、結構化萃取與 Context Caching）
 - `inline_pdf_summary.py`：以 Inline 方式傳入 PDF 進行重點摘要
 - `files_api_pdf_chat.py`：Files API 上傳大型 PDF 並進行多輪對話問答
@@ -56,10 +63,10 @@ Gemini-API/
 - `pdf_context_caching.py`：超長文件 Context Caching 快取加速與節省 Token 成本
 - `pdf_understanding_tutorial.ipynb`：PDF 文件理解互動筆記本
 - `csv_document_caching.ipynb`：CSV 文件快取與問答筆記本
-- `說明書.pdf`：冷氣機使用說明書範例 PDF
-- `aqx_p_488.csv`：空氣品質範例資料檔
+- `說明書.pdf`：冷氣機使用說明書範例 PDF（4MB）
+- `aqx_p_488.csv`：空氣品質範例資料檔（134KB）
 
-### structure_output
+### 4. structure_output (結構化輸出)
 - `README.md`：JSON Schema 結構化輸出教學（含 Interactions API、Pydantic、多態、遞迴、串流與工具整合）
 - `recipe_extractor.py`：Pydantic 基礎食譜與食材萃取範例
 - `advanced_schemas.py`：條件分支 (anyOf/Union 內容審查)、遞迴架構圖與串流輸出範例
@@ -72,7 +79,14 @@ Gemini-API/
 - `2025_01_29.csv`：牌告匯率範例資料
 - `organ.jpg`：樂器分類範例圖片
 
-### code_execution
+### 5. ground_search (聯網搜尋)
+- `README.md`：Google Search 聯網搜尋與事實查核教學（涵蓋即時搜尋、來源引用、Code Execution 混合、Pydantic 結構化）
+- `basic_search.py`：基礎 Google Search 聯網搜尋範例
+- `search_citations.py`：解析搜尋步驟與引用來源網址範例
+- `search_with_code_execution.py`：Google Search 搜尋與 Python 運算混合實戰
+- `search_structured_output.py`：Google Search 搜尋與 Pydantic 結構化提取實戰
+
+### 6. code_execution (程式碼執行)
 - `README.md`：程式碼執行完整教學（涵蓋數學運算、多輪對話、圖片縮放檢驗、CSV 數據計算、Matplotlib 圖表繪製與聯網整合）
 - `math_solver.py`：數學質數計算與程式碼執行歷程解析
 - `currency_calculator.py`：載入 CSV 匯率表並透過 Python 進行跨幣別換匯精確計算
@@ -82,14 +96,14 @@ Gemini-API/
 - `currency_calculator.ipynb`：牌告匯率 CSV 程式碼計算筆記本
 - `2025_01_29.csv`：匯率範例資料檔
 
-### function_calling
+### 7. function_calling (函式呼叫)
 - `README.md`：函式呼叫完整教學（涵蓋 4 步驟標準流程、平行呼叫、組合式決策、模式控制、聯網混合與多模態回傳）
 - `meeting_scheduler.py`：會議排程動作執行範例（Interactions API 4 步驟）
 - `weather_assistant.py`：即時天氣知識查詢與解析範例
 - `parallel_function_calling.py`：多設備平行函式呼叫與批量結果回傳範例
 - `multi_tool_search_and_function.py`：Google Search 聯網搜尋與自訂 Function Calling 混合使用範例
 - `basic_function_calling.ipynb`：基礎函式呼叫互動筆記本
-- `multi_function_calling.ipynb`：多函式自動選擇與執行
+- `multi_function_calling.ipynb`：多函式自動路由與執行
 - `chat_function_history.ipynb`：多輪對話歷史紀錄與函式呼叫
 - `manual_function_calling.ipynb`：手動解析 Function Call 與執行回傳
 - `function_calling_chain.ipynb`：多步驟鏈式函式呼叫工作流
@@ -99,7 +113,7 @@ Gemini-API/
 - `example2/`：臺灣銀行牌告匯率手動呼叫範例
 - `gradio_example1/`：Gradio 互動式介面整合範例
 
-### embeddings/document_search
+### 8. embeddings/document_search (向量檢索)
 - `README.md`：向量嵌入與語意搜尋教學（涵蓋 gemini-embedding-001/002、MRL 維度縮減、Task Types、多語 E5 與 ChromaDB 整合）
 - `gemini_semantic_similarity.py`：Gemini 文本向量相似度計算與矩陣生成
 - `gemini_document_retrieval.py`：非對稱知識庫語意檢索 (Top-K) 排序
@@ -115,21 +129,10 @@ Gemini-API/
 - `001.csv`：說明文件範例資料
 - `Embeddings模型評測.xlsx`：繁體中文各家 Embedding 效果評測表
 
-### ground_search
-- `README.md`：Google Search 聯網搜尋與事實查核教學（涵蓋即時搜尋、來源引用、Code Execution 混合、Pydantic 結構化）
-- `basic_search.py`：基礎 Google Search 聯網搜尋範例
-- `search_citations.py`：解析搜尋步驟與引用來源網址範例
-- `search_with_code_execution.py`：Google Search 搜尋與 Python 運算混合實戰
-- `search_structured_output.py`：Google Search 搜尋與 Pydantic 結構化提取實戰
+### 9. 何謂AIAgent (AI Agent 觀念)
+- `README.md`：工作流類型（Prompt chaining、Routing、Parallelization 等）、Agent 概念與參考影片
 
-### image_generation
-- `README.md`：Imagen 3 與多模態圖像生成教學（涵蓋 Text-to-Image、長寬比控制、gemini-2.5-flash-image 與 Prompt 擴寫產圖工作流）
-- `text_to_image_imagen.py`：Imagen 3 基礎文字生成高品質圖片
-- `aspect_ratio_control.py`：自訂長寬比例（16:9、9:16、1:1）生成範例
-- `gemini_flash_image.py`：Gemini 2.5 Flash Image 多模態圖像生成
-- `prompt_enhancer_and_generator.py`：Gemini 擴寫提示詞 ➔ 自動調用 Imagen 生成圖片的一條龍工作流
-
-### 開源模型
+### 10. 開源模型 (開源模型)
 - `README.md`：Hugging Face serverless（如 Mistral-Nemo）、總結範例
 - `text_to_summarization.py`、`test.ipynb`
 
@@ -155,7 +158,9 @@ Gemini-API/
 
 ## 建議閱讀順序
 
-1. 根目錄 `README.md`：環境與快速開始  
-2. `text_generation/README.md`：基本呼叫與參數  
-3. 依需求進入：文件理解、結構化輸出、程式碼執行、函式呼叫、Embeddings、開源模型  
-4. 各章節內 `.ipynb` 與 `.py` 為可執行範例，建議搭配對應 `README.md` 閱讀  
+1. 根目錄 `README.md`：環境配置與五大學習階段總覽
+2. **第一階段（基礎與多模態）**：`text_generation/` ➔ `image_generation/` ➔ `document_understanding/`
+3. **第二階段（工程化）**：`structure_output/`
+4. **第三階段（外掛工具）**：`ground_search/` ➔ `code_execution/` ➔ `function_calling/`
+5. **第四階段（RAG 檢索）**：`embeddings/document_search/`
+6. **第五階段（進階 Agent）**：`何謂AIAgent/` ➔ `開源模型/`
