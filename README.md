@@ -145,8 +145,13 @@ print(interaction.output_text)
 - [`text_to_summarization.py`](./text_generation/text_to_summarization.py)：長文本重點摘要
 
 ### [2. 文件理解 (document_understanding)](./document_understanding)
-- [`demo1.ipynb`](./document_understanding/demo1.ipynb)：本機與遠端 PDF 文件分析與問答
-- [`demo2.ipynb`](./document_understanding/demo2.ipynb)：多頁大檔案處理與長上下文摘要
+- [`inline_pdf_summary.py`](./document_understanding/inline_pdf_summary.py)：Inline PDF 文件重點摘要
+- [`files_api_pdf_chat.py`](./document_understanding/files_api_pdf_chat.py)：Files API 上傳大型 PDF 並進行多輪對話
+- [`remote_pdf_analysis.py`](./document_understanding/remote_pdf_analysis.py)：遠端下載 PDF 論文進行深度研讀
+- [`multi_pdf_comparison.py`](./document_understanding/multi_pdf_comparison.py)：多份 PDF 跨文件比對與表格輸出
+- [`pdf_structured_extraction.py`](./document_understanding/pdf_structured_extraction.py)：結合 Pydantic 提取結構化規格資訊
+- [`pdf_context_caching.py`](./document_understanding/pdf_context_caching.py)：Context Caching 快取長篇文件加速與節省成本
+- [`pdf_understanding_tutorial.ipynb`](./document_understanding/pdf_understanding_tutorial.ipynb)：PDF 文件理解互動教學筆記本
 
 ### [3. 結構化輸出 (structure_output)](./structure_output)
 - [`recipe_extractor.py`](./structure_output/recipe_extractor.py)：Pydantic 基礎資料萃取（Interactions API）

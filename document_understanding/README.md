@@ -1,400 +1,385 @@
-## 讀取文件(Document_understanding)
-Gemini API 支援 pdf 輸入，包含長文件,最高達3600頁。Gemini模型使用原生視覺處理pdf檔,因此能夠了解文字和圖像內容.透過原生pdf視覺支援,Gemini模型能夠:
-- 分析文件中的圖解說明,圖表和表格
-- 提取資訊轉換成為結構化資料
-- 回答有關於視覺所見和文字內容的問題
-- 摘要文件內容
-- 抄錄文件內容(例如轉換為HTML),保留版面和格式,以便給其它應用程式使用(例如資料庫或向量資料庫)
+# 文件理解 (Document Understanding)
 
-本教學課程示範了一些將Gemini API與PDF文件結合的可能方式,所有輸出皆為純文字
+Gemini 模型原生支援 **PDF 文件深度理解**，利用原生多模態視覺能力解析整個文件上下文。這遠超越傳統的純文字 OCR 辨識，使模型能夠：
 
-## 對pdf進行提示(Prompting with PDFs)
+- 📊 **圖文混排與視覺解析**：理解文件中的排版佈局、複雜表格、曲線圖、流程圖、建築工程圖與手繪草圖，最高支援高達 **1,000 頁** 或 **50MB** 的長篇文件。
+- 📑 **結構化資料萃取**：將掃描件、發票、合約與規格書內容直接轉換為符合 **JSON Schema**（如 Pydantic BaseModel）的結構化資料。
+- 🔍 **跨頁長文問答與摘要**：基於整份文件的文字與視覺圖表進行多輪深度問答。
+- 📝 **精確版面轉錄**：將文件內容轉錄為保有排版結構的 HTML、Markdown 或 LaTeX 格式。
 
-這指南示範如何處理遠端pdf和本地端pdf上傳至模型。
+---
 
-文件必需是下列格式的其中一種資料格式
+## Gemini 3 世代處理與計費重大更新
 
-- pdf - application/pdf
-- javascript - application/x-javascript,text/javascript
-- python - application/x-python, text/x-python
-- txt - text/plain
-- html - text/html
-- css - text/css
-- markdown - text/md
-- csv - text/csv
-- xml - text/xml
-- rtf - text/rtf
+1. **原生內嵌文字免費提取 (Native Text Inclusion)**：
+   - PDF 檔案中內嵌的純文字會被直接提取並傳給模型，且**完全不計入 Token 費用**。
+2. **視覺頁面以 IMAGE 模態計算**：
+   - PDF 頁面影像以每頁約 **258 tokens** 計費，並在 `usage_metadata` 中歸類於 `IMAGE` 模態。
+3. **支援多模態解析度控制 (`media_resolution`)**：
+   - 可在請求中針對個別文件設定 `low`、`medium` 或 `high`，彈性平衡視覺細節與 Token 消耗。
 
-每個文件頁面相當258tokens
+---
 
-### 透過internet取得pdf資料
+## 1. 快速開始：Inline 傳入 PDF 數據 (Passing PDF Data Inline)
+
+適合小型文件（或臨時單次處理），直接將 PDF 以 Base64 編碼內嵌於請求中。
+
+### Python (Interactions API 推薦寫法)
 
 ```python
-import httpx
-import os
+import base64
+from google import genai
+
+client = genai.Client()
+
+with open("說明書.pdf", "rb") as f:
+    pdf_bytes = f.read()
+
+interaction = client.interactions.create(
+    model="gemini-3.7-flash",
+    input=[
+        {
+            "type": "document",
+            "data": base64.b64encode(pdf_bytes).decode("utf-8"),
+            "mime_type": "application/pdf",
+        },
+        {"type": "text", "text": "請簡要總結這份文件的重點，並列出三大安全注意事項。"},
+    ],
+)
+
+print(interaction.output_text)
+```
+
+### Python (GenerateContent API 對照寫法)
+
+```python
 from google import genai
 from google.genai import types
-from IPython.display import display,Markdown,Latex
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-doc_url = "https://discovery.ucl.ac.uk/id/eprint/10089234/1/343019_3_art_0_py4t4l_convrt.pdf"
+client = genai.Client()
 
-doc_data = httpx.get(doc_url).content  # 直接使用 bytes,不需 base64
-
-prompt = "總結這文件"
+with open("說明書.pdf", "rb") as f:
+    pdf_bytes = f.read()
 
 response = client.models.generate_content(
     model="gemini-3.7-flash",
     contents=[
-        types.Part.from_bytes(data=doc_data, mime_type='application/pdf'),
-        prompt
-    ]
-)
-display(Markdown(response.text))
-```
-
-<details>
-<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入遠端 PDF 摘要問答介面</b></summary>
-
-**Gradio 介面開發 Prompt：**
-```text
-請幫我將上述「透過網址讀取 PDF 並總結」的程式碼改寫為 Gradio 應用：
-1. 建立一個包含「PDF URL 輸入框」與「提問 / 摘要 Prompt 輸入框」的介面。
-2. 點擊按鈕後，使用 httpx 下載該 PDF，並調用 Gemini 3.7 Flash（以 Part.from_bytes 傳入 PDF 資料）進行分析。
-3. 輸出區以 Markdown 呈現文件總結或問答結果。
-4. 加入網路連線與下載錯誤的防呆提示（gr.Warning）。
-```
-
-**Streamlit 介面開發 Prompt：**
-```text
-請幫我將上述程式改寫為 Streamlit 應用：
-1. 提供 st.text_input 讓使用者輸入任意網路 PDF 連結。
-2. 提供提問輸入框（預設提示為「總結這份文件的重點」）。
-3. 使用 st.button("開始分析") 觸發，並使用 st.spinner 下載與分析 PDF，最後以 st.markdown 完整呈現結果。
-```
-</details>
-
-**輸出結果**
-
-```markdown
-當然，以下是這份文件的重點總結：
-
-**主題：** 該論文介紹了一種名為 AlphaFold 的新型蛋白質結構預測方法，該方法利用深度學習和基於距離的潛在能量函數。
-
-**核心概念：**
-
-1.  **基於距離的預測：** AlphaFold 訓練一個神經網絡來預測蛋白質中胺基酸殘基對之間的距離，而不是直接預測接觸。研究表明基於距離的預測比基於接觸的預測提供了更多有關蛋白質結構的信息。
-
-2.  **深度學習：** 該系統使用深度卷積殘差神經網絡（Deep Convolutional Residual Network）從蛋白質序列的多序列比對（MSA）數據中提取特徵，並預測殘基對之間的距離分佈。
-
-3.  **基於潛在能量函數的結構生成：** AlphaFold 將預測的距離分佈轉換為蛋白質特異性的潛在能量函數，然後使用梯度下降算法來優化蛋白質結構。這個過程包括對結構的扭轉角進行優化，並將殘基對之間的距離約束考慮在內。
-
-4.  **無模板預測：** 論文重點強調 AlphaFold 在無模板（free modelling）場景下的性能，證明即使沒有同源結構作為模板，它也能產生高精度的結構。
-
-**主要發現和貢獻：**
-
-*   **卓越的預測精度：** 在 CASP13 蛋白質結構預測競賽中，AlphaFold 的表現超越了所有其他參與者，它能夠以高精度預測更多 FM（Free Modelling）類的蛋白質結構。它在自由建模域的準確率（TM-score）大幅提高，同時在基於模板建模（Template-Based Modelling）上也表現出色。
-*   **快速且高效的優化：** AlphaFold 通過簡單的梯度下降優化過程，在不需要複雜的抽樣程序的情況下實現了蛋白質結構的準確預測。
-*   **潛在能量函數的有效性：** 通過訓練一個神經網絡預測殘基之間的距離，並將這些距離信息轉化為蛋白質特異性的潛在能量函數，並對該潛在能量函數進行優化，可以得到準確的結構預測，這證明了基於距離的預測的有效性。
-*   **對生物學的啟示：** AlphaFold 結構預測精度的提高有望幫助理解蛋白質的功能和異常，尤其是在沒有實驗確定的同源蛋白質的情況下。其高精度結構預測能應用於蛋白-蛋白交互介面、分子對接和結晶學中，從而提高對生物學過程的理解。
-
-**方法詳解：**
-
-*   論文中詳述了從 MSA 數據生成特徵、深度學習網絡的架構、如何將距離信息轉化為能量函數、以及如何使用梯度下降算法生成蛋白質結構。
-*   其中關鍵的技術包括：使用 dilated convolution 提高預測距離信息時的效率，以及加入雜訊重新初始化（noisy restarts）提高結構預測的準確度等。
-*   為了衡量模型能力，論文中使用了多種評估指標，包括 TM-score、GDT-TS、IDDT、RMSD 等。此外，還使用了集成梯度（Integrated Gradients）的方法來分析神經網絡是如何學習到距離信息的。
-
-**總結:** AlphaFold 是一項重大突破，在蛋白質結構預測領域取得了顯著進展。它通過結合深度學習、基於距離的預測和有效的優化算法，為生物學研究帶來了更準確和可用的蛋白質結構預測方法。此外，這篇論文也展示了如何分析神經網絡學習到的複雜規則，幫助理解模型的工作原理。
-```
-
-### 本地端 pdf(檔案20MB以下)
-
-```python
-import os
-from google import genai
-from google.genai import types
-from IPython.display import display,Markdown,Latex
-
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-
-doc_path = '說明書.pdf'
-with open(doc_path, "rb") as doc_file:
-    doc_data = doc_file.read()  # 直接使用 bytes
-
-prompt = "總結這文件"
-
-response = client.models.generate_content(
-    model="gemini-3.7-flash",
-    contents=[
-        types.Part.from_bytes(data=doc_data, mime_type='application/pdf'),
-        prompt
-    ]
-)
-
-display(Markdown(response.text))
-```
-
-<details>
-<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入 PDF 檔案上傳與智慧問答介面</b></summary>
-
-**Gradio 介面開發 Prompt：**
-```text
-請幫我將上述「本地 PDF 讀取與分析」程式改寫為 Gradio 網頁應用：
-1. 介面包含 `gr.File(file_types=['.pdf'])` 讓使用者直接從瀏覽器上傳 PDF 檔案。
-2. 提供自訂提問輸入框（例如「摘要本文重點」、「列出所有安全警告事項」）。
-3. 讀取上傳檔案的 binary 內容後，透過 `types.Part.from_bytes(data=..., mime_type='application/pdf')` 送入 Gemini 3.7 Flash。
-4. 使用 `gr.Markdown` 呈現排版精美的回覆。
-```
-
-**Streamlit 介面開發 Prompt：**
-```text
-請幫我將上述程式改寫為 Streamlit 應用：
-1. 使用 `st.file_uploader("上傳 PDF 文件", type=['pdf'])` 接收使用者上傳檔案。
-2. 上傳完成後，顯示檔案大小與名稱，並提供提問輸入框與預設快捷問題按鈕。
-3. 讀取 PDF bytes 並調用 Gemini 3.7 Flash 進行解答，以 `st.chat_message("assistant")` 呈現結果。
-```
-</details>
-
-**輸出總結**
-
-```markdown
-這是一個關於富士通壁掛式空調機的使用說明書。以下為文件的重點總結：
-
-**重要安全注意事項**
-
-*   警告：強調有死亡或嚴重傷害的風險，以及禁止和必須執行的行為。
-*   注意：強調有傷害或財物受損的危險。
-*   提醒用戶必須聯絡授權維修人員進行維修、安裝及移機。
-*   強調避免損壞電源線、洩漏冷媒、雷雨天氣時觸摸機器。
-*   提醒用戶勿使用可燃氣體或讓冷風直吹身體。
-*   警告用戶要正確處置本產品，並避免兒童戲玩本機。
-*   其他安全警告包括禁止用濕手操作、在不穩定的梯子上進行清潔等。
-
-**零件描述和操作**
-
-*   列出室內機組的附件，包括遙控器、遙控器座、自攻螺絲、電池、抗菌過濾網和過濾網框架。
-*   描述如何安裝遙控器座和如何裝入電池。
-*   提供室内機組的概述，包括入風口格柵、「強制自動」按鈕、前面板、人體智慧眼、上下風向導風板、排水軟管、遙控器信號接收器、省電指示燈、定時指示燈、運轉指示燈和左右風向導風板、空氣過濾網和抗菌過濾網。
-*   解釋如何操作遙控器，包括按鈕功能（啟動/停止、模式選擇、溫度、風量、強勁、搖擺、睡眠等）、顯示屏上的指示燈、以及如何設定定時和離席節電。
-
-**運轉說明**
-
-*   詳細介紹了如何使用各種功能，如自動、冷氣、除濕、送風和暖氣模式。
-*   解釋了自動除霜運轉、自動重新啟動功能和暖氣性能。
-*   解釋了關於設定定時、睡眠定時、以及使用群組控制的相關操作。
-
-**清潔與保養**
-
-*   強調清潔前必須關閉機組並斷開電源。
-*   描述了如何清潔入風口格柵、空氣過濾網和更換抗菌過濾網。
-*   提醒用戶定期清潔，並強調避免使用研磨清潔劑或揮發性溶劑。
-
-**故障排除**
-
-*   提供一份關於可能發生的故障和相關原因的清單。
-*   提供一個故障排除檢查清單，讓使用者檢查簡單問題。
-*   警告用戶在某些情況下必須立即停止運轉並聯繫授權維修人員。
-
-**其他**
-
-*   提供台灣富士通將軍國際股份有限公司的聯絡資訊。
-*   提供關於有線遙控器和群組控制的說明。
-*   提供關於長時間不使用機組後注意事項。
-
-**總體來說，本說明書全面地介紹了富士通壁掛式空調機的安全操作、維護和故障排除，提供了用戶所需的所有資訊。**
-```
-
-### 大型本地檔(超過20MB)
-
-```python
-import os
-from google import genai
-from IPython.display import display,Markdown,Latex
-
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-# 使用 File API 上傳大型檔案(超過 20MB 或想重複使用)
-sample_pdf = client.files.upload(file='說明書.pdf')
-response = client.models.generate_content(
-    model="gemini-3.7-flash",
-    contents=['給我這個pdf檔的說明', sample_pdf]
+        types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
+        "請總結這份文件的重點",
+    ],
 )
 print(response.text)
 ```
 
 <details>
-<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入大型檔案 Files API 管理介面</b></summary>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：PDF 即時摘要與問答介面</b></summary>
 
 **Gradio 介面開發 Prompt：**
 ```text
-請幫我將上述使用 Gemini Files API 處理大型 PDF 的程式改寫為 Gradio 應用：
-1. 介面提供檔案上傳區，使用者上傳大型 PDF 後，後端自動調用 `client.files.upload` 上傳至 Google 伺服器並顯示 File URI 與上傳狀態。
-2. 提供多輪對話或提問輸入框，使用該上傳檔案的 Handle 進行多次連續問答，避免重複傳送大檔案。
-3. 支援刪除檔案按鈕（`client.files.delete`）以釋放雲端暫存空間。
+請幫我將上述「PDF 讀取與總結」程式碼改寫為 Gradio 應用：
+1. 介面提供 gr.File(file_types=['.pdf']) 讓使用者上傳本地 PDF。
+2. 提供提問輸入框（預設提示為「請條列摘要本文重點」）。
+3. 讀取 PDF bytes 並調用 Gemini 3.7 Flash 進行多模態視覺理解。
+4. 輸出區以 gr.Markdown 呈現結構化總結。
 ```
 
 **Streamlit 介面開發 Prompt：**
 ```text
-請幫我將上述大型 PDF 處理程式改寫為 Streamlit 應用：
-1. 使用 `st.file_uploader` 接收大檔案，並將上傳至 Gemini Files API 後回傳的 `sample_pdf` 物件暫存在 `st.session_state`。
-2. 側邊欄顯示檔案狀態與大小。
-3. 主畫面使用聊天介面（`st.chat_message`），讓使用者對該份大文件進行多輪連續深度問答。
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 使用 st.file_uploader 上傳 PDF 檔案。
+2. 上傳完成後，顯示檔案名稱與大小，並提供提問文字輸入框。
+3. 點擊「開始分析」按鈕後，以 st.spinner 提示載入，最後以 st.markdown 呈現排版結果。
 ```
 </details>
 
-**輸出**
+---
 
-```markdown
-好的，這是一個關於 PDF 檔案內容的說明。
+## 2. 透過 Files API 上傳大型 PDF (Files API Upload)
 
-這個 PDF 檔案是關於「富士通將軍」品牌空調機的使用說明書，內容包含安全注意事項、機器構造、遙控器操作、運轉模式、保養維護及故障排除等資訊。以下為更詳細的內容摘要：
+對於較大檔案（超過 20MB）或需要在**多輪對話中重複引用**的文件，建議使用 **Files API**。它能將檔案上傳與模型推論解耦，節省網路頻寬並加速後續推論反應。
 
-**頁面 1：**
-*   **封面：** 標示「使用說明書」和「空調機 壁掛式」，附上室內機的示意圖。
-*   **目錄：** 列出說明書的章節，包括安全注意事項、操作、定時運轉、人體智慧眼、一般資訊、清潔保養及故障排除等。
-*   **安全注意事項：** 詳細說明操作空調機時的注意事項和警告，並附上相對應的圖示（如禁止符號、警告符號等）。警告事項包含產品有可燃冷媒、機台有用戶不可自行維修部分、勿讓孩童戲耍機器等；注意事項包括保持良好通風、避免讓冷風直吹身體等。
-
-**頁面 2：**
-*   **安全注意事項（續）：** 繼續說明安全注意事項，包括避免將其他物品置於機器下方、勿使用於儲存食物等。
-*   **零件介紹：**  介紹室內機組的附件（遙控器、電池、過濾網等），及如何安裝遙控器座。
-*   **遙控器安裝：** 說明如何安裝電池，以及設定時間。
-
-**頁面 3：**
-*   **室內機組概述：** 詳細說明室內機的各部分名稱，如入風口格柵、「強制自動」按鈕、前面板、人體智慧眼、上下風向導風板等。並附上機組外部圖示說明。
-*   **重要提醒：** 強調避免阻擋入風口/出風口、風向調整須先停止運轉等。
-
-**頁面 4：**
-*   **遙控器概述與操作：** 詳細介紹遙控器各按鈕的功能，包含開關、模式選擇、溫度設定、風量調整、強勁模式、省電模式等。
-*   **遙控器顯示：**說明螢幕上的各種指示燈號，和如何調整溫度單位（攝氏/華氏）。
-
-**頁面 5：**
-*   **遙控器概述與操作（續）：** 介紹搖擺、風向調整、睡眠定時、取消定時、復歸等按鈕功能。
-*   **其他按鈕：**  說明外機靜音、省電、智慧眼（離席節電）等功能按鈕。
-
-**頁面 6：**
-*   **遙控器自訂代碼設定：**  說明如何設定遙控器的自訂代碼，防止操作到其他相近空調機。
-*   **定時運轉：**  詳細說明定時開機、定時關機，以及如何設定程式定時（組合使用定時開關）。
-*   **睡眠定時：**  說明如何設定睡眠定時，使睡眠期間溫度更舒適。
-
-**頁面 7：**
-*   **人體智慧眼（離席節電）：**  說明人體智慧眼如何偵測房間內是否有人，並自動調節溫度，達到節能效果。
-*   **功能限制：**  列出人體智慧眼可能無法準確偵測的狀況，並說明偵測範圍。
-
-**頁面 8：**
-*   **關於運轉的一般資訊：** 說明自動除霜運轉、自動重新啟動功能、暖氣性能等。
-*   **其他資訊：** 介紹有線遙控器 (選配) 和群組控制 (選配)。
-
-**頁面 9：**
-*   **清潔與保養：** 強調清潔前的安全注意事項。
-*   **日常保養：** 說明如何清潔室內機組、入風口格柵及空氣過濾網。
-
-**頁面 10：**
-*   **清潔與保養（續）：** 說明如何安裝和更換抗菌過濾網，以及保養負离子除臭過濾網。
-*   **其他檢查：** 提醒長時間不使用機器時的注意事項，以及其他檢查項目，並說明過濾網重設功能。
-
-**頁面 11：**
-*   **故障排除：** 說明機組異常時應注意的事項，及可能發生的正常狀況。
-*   **問題排查：** 列出常見的運轉問題（如無法運轉、冷暖氣效能不佳），並提供簡單的檢測方法。
-
-**頁面 12：**
-*   **廠商資訊：** 提供台灣富士通將軍國際股份有限公司的聯絡方式、網址，以及產品的購買資訊填寫欄位。
-
-總結來說，這是一份相當詳細的空調機使用說明書，涵蓋了從安全注意事項到故障排除的所有面向，可作為使用者操作和維護機器的重要參考。
-
-如有任何其他問題，請隨時提出。
-```
-
-### 暫時儲存pdf內容
+> [!NOTE]
+> Files API 在支援 Gemini API 的所有地區均**免費提供**，上傳的檔案會在 Google 伺服器暫存 **48 小時**。
 
 ```python
-import os
+import time
+from google import genai
+
+client = genai.Client()
+
+# 1. 上傳大型 PDF
+uploaded_file = client.files.upload(file="說明書.pdf")
+print(f"檔案上傳成功: {uploaded_file.name} (URI: {uploaded_file.uri})")
+
+# 2. 等待檔案處理完成
+file_info = client.files.get(name=uploaded_file.name)
+while file_info.state == "PROCESSING":
+    time.sleep(2)
+    file_info = client.files.get(name=uploaded_file.name)
+
+# 3. 第一輪對話提問
+interaction1 = client.interactions.create(
+    model="gemini-3.7-flash",
+    input=[
+        {
+            "type": "document",
+            "uri": uploaded_file.uri,
+            "mime_type": uploaded_file.mime_type,
+        },
+        {"type": "text", "text": "這台機器的濾網該如何拆卸與清洗？"},
+    ],
+)
+print("Turn 1 回覆:\n", interaction1.output_text)
+
+# 4. 第二輪追問（伺服器端維持上下文）
+interaction2 = client.interactions.create(
+    model="gemini-3.7-flash",
+    previous_interaction_id=interaction1.id,
+    input="清洗後需要多久時間晾乾？如何裝回？",
+)
+print("\nTurn 2 追問回覆:\n", interaction2.output_text)
+```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：大型 PDF 智慧分析與多輪對話助手</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述使用 Files API 的 PDF 程式改寫為 Gradio 多輪對話應用：
+1. 側邊欄提供檔案上傳區，上傳完成後呼叫 client.files.upload 並顯示上傳成功狀態。
+2. 主畫面提供 gr.ChatInterface 對話框，讓使用者針對已上傳的 PDF 進行多輪深入提問。
+3. 每次對話自動帶入 previous_interaction_id 維護上下文。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述程式改寫為 Streamlit 應用：
+1. 在側邊欄上傳 PDF，上傳後存入 client.files.upload 並將 URI 存入 st.session_state。
+2. 主畫面使用 st.chat_message 建立多輪對話問答介面。
+3. 支援快速切換預設常見問題按鈕。
+```
+</details>
+
+---
+
+## 3. 透過 URL 遠端載入長篇 PDF 論文 (Remote PDFs from URLs)
+
+直接從網路上下載 arXiv 或其他學術論文的 PDF，並交由 Gemini 進行深入研讀分析。
+
+```python
+import io
+import httpx
+from google import genai
+
+client = genai.Client()
+
+paper_url = "https://arxiv.org/pdf/2312.11805"
+pdf_content = httpx.get(paper_url, follow_redirects=True).content
+
+uploaded_paper = client.files.upload(
+    file=io.BytesIO(pdf_content),
+    config={"mime_type": "application/pdf"},
+)
+
+prompt = """
+請閱讀這篇 Gemini 技術報告論文，針對以下三點提供繁體中文深入分析：
+1. 核心模型架構設計
+2. 各項基準測試 (MMLU, GSM8K 等) 的亮點表現
+3. 總結其對多模態 AI 的主要貢獻
+"""
+
+interaction = client.interactions.create(
+    model="gemini-3.7-flash",
+    input=[
+        {
+            "type": "document",
+            "uri": uploaded_paper.uri,
+            "mime_type": uploaded_paper.mime_type,
+        },
+        {"type": "text", "text": prompt},
+    ],
+)
+print(interaction.output_text)
+```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：學術論文與線上 PDF 研讀助理</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「遠端 PDF 論文分析」改寫為 Gradio 論文研讀助手：
+1. 介面提供 URL 輸入框（支援直接貼上 arXiv PDF 連結）。
+2. 提供下拉選單選擇分析模式（「論文快速摘要」、「方法論剖析」、「實驗結果評估」、「關鍵公式解讀」）。
+3. 點擊按鈕後自動下載、上傳並產生繁體中文分析報告。
+```
+</details>
+
+---
+
+## 4. 跨多份 PDF 綜合比對與表格輸出 (Passing Multiple PDFs)
+
+Gemini 支援在單一請求中傳入**多份 PDF 文件**（總頁數最高 1000 頁），並進行跨文件交叉比對。
+
+```python
+import base64
+from google import genai
+
+client = genai.Client()
+
+with open("說明書.pdf", "rb") as f:
+    pdf_bytes = f.read()
+
+prompt = """
+請比對這份說明書中的「安全操作規範」與「日常保養清潔」兩個章節：
+1. 彙整各自的主要風險與防範措施。
+2. 以一張清楚的 Markdown 表格輸出比較。
+"""
+
+interaction = client.interactions.create(
+    model="gemini-3.7-flash",
+    input=[
+        {
+            "type": "document",
+            "data": base64.b64encode(pdf_bytes).decode("utf-8"),
+            "mime_type": "application/pdf",
+        },
+        {"type": "text", "text": prompt},
+    ],
+)
+print(interaction.output_text)
+```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：多文件智慧比對與差異分析看板</b></summary>
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將多文件比對程式改寫為 Streamlit 應用：
+1. 支援同時上傳 2~3 份 PDF 文件（例如兩份合約版本或兩篇競品規格書）。
+2. 呼叫 Gemini 3.7 Flash 進行深度差異分析。
+3. 介面以 st.table 呈現關鍵條款對照表，並以 st.warning 標記高風險差異項。
+```
+</details>
+
+---
+
+## 5. PDF 結構化資訊萃取 (Structured Outputs with PDFs)
+
+結合 **Pydantic BaseModel** 與 `response_format`，模型能直接從 PDF 掃描檔或規格書中提取型別安全的結構化 JSON 資料。
+
+```python
+import base64
+from typing import List, Optional
+from google import genai
+from pydantic import BaseModel, Field
+
+class ProductSpec(BaseModel):
+    product_name: str = Field(description="產品名稱與品牌型號")
+    category: str = Field(description="產品類別，例如：壁掛式空調機")
+    safety_warnings: List[str] = Field(description="重要安全警告清單")
+    maintenance_tips: List[str] = Field(description="定期保養與清潔要點")
+    customer_support_phone: Optional[str] = Field(description="客戶服務或維修聯絡電話")
+
+client = genai.Client()
+
+with open("說明書.pdf", "rb") as f:
+    pdf_bytes = f.read()
+
+prompt = "請詳細閱讀這份說明書 PDF，將關鍵產品資訊、安全注意事項與維護重點提取為結構化資料。"
+
+interaction = client.interactions.create(
+    model="gemini-3.7-flash",
+    input=[
+        {
+            "type": "document",
+            "data": base64.b64encode(pdf_bytes).decode("utf-8"),
+            "mime_type": "application/pdf",
+        },
+        {"type": "text", "text": prompt},
+    ],
+    response_format={
+        "type": "text",
+        "mime_type": "application/json",
+        "schema": ProductSpec.model_json_schema(),
+    },
+)
+
+spec = ProductSpec.model_validate_json(interaction.output_text)
+print(spec.model_dump_json(indent=2))
+```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：發票與合約欄位自動萃取系統</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述 PDF 結構化擷取程式改寫為 Gradio 應用：
+1. 介面提供 PDF 上傳框。
+2. 呼叫 Gemini 進行 Pydantic Schema 結構化提取。
+3. 介面左側展示 PDF 預覽，右側以 gr.JSON 與 gr.Dataframe 呈現提取出的結構化欄位。
+```
+</details>
+
+---
+
+## 6. Context Caching 內容快取加速 (Context Caching with Documents)
+
+對於**超長文件（如數百頁手冊）**或**需要頻繁查詢的大型文件**，啟用 **Context Caching** 可以將文件預先快取在伺服器端，不僅推論速度大幅加快，還可**省下高達 75% 的 Token 費用**。
+
+```python
 from google import genai
 from google.genai import types
-from IPython.display import display,Markdown,Latex
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+client = genai.Client()
 
-document = client.files.upload(file='說明書.pdf')
+uploaded_doc = client.files.upload(file="說明書.pdf")
+
+# 建立快取 (TTL 設定為 1 小時)
 cache = client.caches.create(
     model="gemini-3.7-flash",
     config=types.CreateCachedContentConfig(
-        system_instruction='你是一個專業的分析達人',
-        contents=[document]
-    )
+        system_instruction="你是一位專業的家電工程顧問與說明書專家。",
+        contents=[uploaded_doc],
+        ttl="3600s",
+    ),
 )
 
+print(f"快取建立成功: {cache.name}")
+
+# 使用快取進行快速低成本查詢
 response = client.models.generate_content(
     model="gemini-3.7-flash",
-    contents="請分析這個文件",
-    config=types.GenerateContentConfig(cached_content=cache.name)
+    contents="這台機器在什麼情況下必須立即停止運轉並拔掉電源？",
+    config=types.GenerateContentConfig(cached_content=cache.name),
 )
-print(response.usage_metadata)
-print(response.text)
-```
 
-> 提示：內容快取(context caching)適合同一份大型文件要重複提問的情境，可省下重複傳送文件的 token 費用。
+print(response.text)
+if response.usage_metadata:
+    print(f"快取命中 Token 數: {response.usage_metadata.cached_content_token_count}")
+```
 
 <details>
-<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入 Context Caching 快取問答介面</b></summary>
-
-**Gradio 介面開發 Prompt：**
-```text
-請幫我將上述 Context Caching 程式改寫為 Gradio 網頁應用：
-1. 介面提供「建立快取」按鈕：上傳 PDF 並建立 cache，在畫面上顯示 cache.name 與過期時間。
-2. 建立快取後解鎖聊天問答輸入框，每次提問皆透過 `cached_content=cache.name` 查詢。
-3. 在介面上即時顯示每次查詢的 token 消耗統計（包含 cached_content_token_count 與節省費用提示）。
-```
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：超長文件 Context Caching 深度研讀儀表板</b></summary>
 
 **Streamlit 介面開發 Prompt：**
 ```text
 請幫我將上述 Context Caching 程式改寫為 Streamlit 應用：
-1. 在側邊欄提供 PDF 上傳並一鍵建立 Gemini Context Cache（存於 st.session_state）。
-2. 在主畫面以聊天室形式進行對話，使用該快取加速推論並降低 token 成本。
-3. 使用 st.metric 呈現目前省下的快取 Token 數量（cached_content_token_count）。
+1. 側邊欄提供 PDF 上傳並一鍵建立 Context Cache。
+2. 顯示快取過期倒數計時與已省下的 Token 數量 (st.metric)。
+3. 主畫面以聊天室形式快速回應使用者的各種深入問題。
 ```
 </details>
 
-**輸出**
+---
 
-```python
-prompt_token_count: 12603
-candidates_token_count: 602
-total_token_count: 13205
-cached_content_token_count: 12598
+## 7. 技術規格與最佳實踐 (Technical Details & Best Practices)
 
-這份文件是日文版的富士通將軍空調的中文使用說明書。它詳細描述了空調的安裝、操作、保養和故障排除。  以下是一些關鍵分析點：
+### 技術規格與限制
+- **檔案大小與頁數**：單一 PDF 最大支援 **50MB** 或 **1,000 頁**。
+- **Token 計算**：每一頁 PDF 約換算為 **258 tokens**（視覺模態）。
+- **解析度自動縮放**：頁面會自動等比例縮放至 768×768 到 3072×3072 像素之間。
 
-**內容結構清晰，邏輯性強：**
-
-* **目錄:**  提供了清晰的章節目錄，方便用戶快速找到所需資訊。
-* **安全注意事項:**  在使用說明書的開頭就詳細說明了安全注意事項，強調了安全操作的重要性，並用不同的標誌區分了不同嚴重程度的風險。
-* **圖文並茂:**  說明書中大量使用了圖表，清晰地展示了空調的組件、操作步驟和保養方法，讓使用者更容易理解。
-* **步驟式教學:**  操作和保養部分採用了步驟式的教學方法，讓使用者可以循序漸進地完成操作。
-* **故障排除:**  提供常見故障的解決方案，方便使用者自行處理一些簡單的問題。
-
-
-**內容覆蓋全面，資訊詳盡：**
-
-* **產品概述:**  介紹了空調的主要功能和組件。
-* **操作指南:**  詳細解釋了遙控器和室內機組的操作方法，包括各種模式的設定和使用方法。
-* **保養說明:**  提供了空氣過濾網、抗菌過濾網等部件的清潔和更換方法。
-* **故障排除指南:**  針對常見的故障問題提供了故障排除方法和建議。
-* **安全警告:**  在多處提醒用戶注意安全事宜，並特別強調了可燃冷媒的風險。
-
-
-**優點：**
-
-* **易於理解：**  文字簡潔明瞭，圖表清晰易懂，即使是不熟悉空調操作的用戶也能夠輕鬆上手。
-* **安全性重視：**  多次強調安全注意事項，有效降低了使用者操作風險。
-* **完整性高：**  涵蓋了空調使用的所有方面，從安裝到保養，再到故障排除，都有詳細的說明。
-
-
-**不足之處：**
-
-* **部分圖像質量不高：**  有些圖像的解析度較低，可能影響閱讀體驗（這可能是 OCR 過程中影像品質下降造成）。
-* **部分文字可能翻譯不準確：**  在 OCR 轉換的過程中，某些專業術語或特殊語法可能出現翻譯不準確的情況。 (這也是基於OCR轉換的結果)
-
-
-**整體評價：**
-
-這份使用說明書是一份質量較高的文件，它結構清晰，內容完整，圖文並茂，能夠有效地指導使用者正確使用和保養空調。雖然有些圖片質量和文字翻譯可能存在不足，但並不影響其整體的实用价值。  如果可以提供原始的PDF文件，分析結果會更加準確。
-```
+### 最佳實踐 (Best Practices)
+1. **校正旋轉方向**：上傳前確保頁面方向為正向（未倒置或傾斜 90 度）。
+2. **避免模糊影像**：掃描文件請維持適當解析度，確保細小文字清晰可辨。
+3. **提示詞順序**：在輸入陣列中，**將文字提示放在 Document 之後**，能達到最佳的視覺關聯效果。

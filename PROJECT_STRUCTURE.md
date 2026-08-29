@@ -42,9 +42,17 @@ Gemini-API/
 - `quickstart.ipynb`、`tripPlanner.ipynb`
 
 ### document_understanding
-- `README.md`：PDF 遠端/本機、大檔案、暫存與 cache
-- `demo1.ipynb`、`demo2.ipynb`
-- `aqx_p_488.csv`：範例資料
+- `README.md`：PDF 文件理解完整教學（涵蓋 Inline PDF、Files API、URL 遠端載入、多文件比對、結構化萃取與 Context Caching）
+- `inline_pdf_summary.py`：以 Inline 方式傳入 PDF 進行重點摘要
+- `files_api_pdf_chat.py`：Files API 上傳大型 PDF 並進行多輪對話問答
+- `remote_pdf_analysis.py`：從 URL 遠端下載 PDF 論文並由 Gemini 進行深度剖析
+- `multi_pdf_comparison.py`：多份 PDF 跨文件比對與 Markdown 表格輸出
+- `pdf_structured_extraction.py`：結合 Pydantic 從 PDF 中提取結構化規格資訊
+- `pdf_context_caching.py`：超長文件 Context Caching 快取加速與節省 Token 成本
+- `pdf_understanding_tutorial.ipynb`：PDF 文件理解互動筆記本
+- `csv_document_caching.ipynb`：CSV 文件快取與問答筆記本
+- `說明書.pdf`：冷氣機使用說明書範例 PDF
+- `aqx_p_488.csv`：空氣品質範例資料檔
 
 ### structure_output
 - `README.md`：JSON Schema 結構化輸出教學（含 Interactions API、Pydantic、多態、遞迴、串流與工具整合）
