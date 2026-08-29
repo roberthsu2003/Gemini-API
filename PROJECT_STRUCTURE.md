@@ -47,9 +47,17 @@ Gemini-API/
 - `aqx_p_488.csv`：範例資料
 
 ### structure_output
-- `README.md`：JSON schema、列舉、實作範例
-- `lesson1.ipynb`、`demo1.py`、`demo4.py`、`test*.ipynb`
-- `2025_01_29.csv`：範例資料
+- `README.md`：JSON Schema 結構化輸出教學（含 Interactions API、Pydantic、多態、遞迴、串流與工具整合）
+- `recipe_extractor.py`：Pydantic 基礎食譜與食材萃取範例
+- `advanced_schemas.py`：條件分支 (anyOf/Union 內容審查)、遞迴架構圖與串流輸出範例
+- `currency_exchange_gradio.py`：臺灣銀行牌告匯率提取與 Gradio 換算介面
+- `lesson1.ipynb`：結構化輸出完整互動筆記本教學（Prompt Schema、Pydantic、Enum 分類等）
+- `exchange_rate_extraction.ipynb`：牌告匯率網頁擷取與 Pydantic 結構化轉換
+- `exchange_rate_to_csv.ipynb`：牌告匯率擷取並轉換儲存為 CSV
+- `article_content_extraction.ipynb`：新聞文章內容擷取與整理
+- `web_link_extraction.ipynb`：網頁指定超連結擷取
+- `2025_01_29.csv`：牌告匯率範例資料
+- `organ.jpg`：樂器分類範例圖片
 
 ### code_execution
 - `README.md`：code execution 啟用方式、Chat 內使用、匯率範例

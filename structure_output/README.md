@@ -1,540 +1,516 @@
-# 產生結構化的資料
+# 產生結構化輸出 (Structured Outputs)
 
-Gemini 預設產生非結構化文本，但某些應用程式需要結構化文字。對於這些用例，您可以限制 Gemini 使用 JSON（一種適合自動處理的結構化資料格式）進行回應。您也可以限制模型符合列舉中指定的選項之一進行回應。
+Gemini 預設會產生自然語言的非結構化文字，但在許多實際應用中（如自動化管線、資料庫寫入、API 串接、UI 動態渲染等），我們需要模型嚴格依照預定義的資料格式進行回應。
 
-- 從報紙文章中提取公司訊息，建立公司資料庫。
-- 從簡歷中提取標準化訊息
-- 從食譜中提取原料並顯示每種原料的雜貨網站連結。
-
-在您的提示中，您可以要求 Gemini 產生 JSON 格式的輸出，但請注意，該模型並不保證一定會產生 JSON 且只產生 JSON。為了獲得更確定的回應，您可以在回應 Schema 欄位中傳遞特定的 JSON 模式，以便 Gemini 始終以預期的結構進行回應。
-
-本指南向您展示如何透過新版 `google-genai` SDK 使用 `generate_content` 方法產生 JSON。這些範例展示了純文字輸入，但 Gemini 還可以對包含圖像、視訊和音訊的多模式請求產生 JSON 回應。
-
-> **SDK 說明（2026-07）**：本章已全面改用新版 `google-genai`（`from google import genai`、`client.models.generate_content`）。舊版 `google-generativeai`（`genai.configure` / `GenerativeModel`）已淘汰。結構化輸出的設定由 `generation_config=genai.GenerationConfig(...)` 改為 `config=types.GenerateContentConfig(...)`。
+透過 **Structured Outputs（結構化輸出）**，您可以限制 Gemini 模型強制輸出符合 **JSON Schema** 的內容，確保輸出具備**型別安全 (Type-Safe)**、**結構確定**且**易於自動化解析**的特點。
 
 ---
 
-## 產生json格式
-當模型配置為輸出 JSON 時，它會以 JSON 格式的輸出回應任何提示。您可以透過提供模式來控制 JSON 回應的結構。有兩種方法可以為模型提供架構：
+## 核心應用場景
 
-- 使用文字敘述的提示
-- 使用 `response_schema` 傳入型別化的圖例（比較精準）
+- **資料擷取 (Data Extraction)**：從新聞、合約或雜亂文章中擷取人名、日期、公司、金額等特定欄位。
+- **結構化分類 (Classification)**：將內容分類至預先定義的類別或列舉 (Enum)，並回傳分類理由。
+- **代理與工具工作流程 (Agentic Workflows)**：為下游的 Function Calling、資料庫或第三方 REST API 產生結構化參數。
+- **階層與遞迴關係 (Hierarchical & Recursive Structures)**：萃取組織架構圖、心智圖、AST 語法樹等具備父子嵌套關係的資料。
 
-這兩種方法都適用於目前的 Gemini 3 世代模型（如 `gemini-flash-latest`）。
+---
 
-### prompt 中提供 json 文字的描述
+## 支援的 SDK 與語法規範
 
-- **使用英文範例1**
+目前 Google GenAI SDK 原生支援以下方式定義 Schema：
+- **Python**：使用 [Pydantic](https://docs.pydantic.dev/latest/) (`BaseModel`, `Field`) 或原生 TypedDict / Enum。
+- **JavaScript / TypeScript**：使用 [Zod](https://zod.dev/) 或標準 JSON Schema 物件。
+- **REST API**：直接傳入 JSON Schema 定義。
 
-```python
-from google import genai
-import os
-import json
+> [!TIP]
+> **API 呼叫方式說明**：
+> - **Interactions API（推薦）**：透過 `client.interactions.create` 搭配 `response_format={"type": "text", "mime_type": "application/json", "schema": ...}`。
+> - **GenerateContent API**：透過 `client.models.generate_content` 搭配 `config=types.GenerateContentConfig(response_mime_type="application/json", response_schema=...)`。
+> - 目前推薦模型：`gemini-3.7-flash` 或 `gemini-3.5-flash-lite`。
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-prompt = """List a few popular cookie recipes in JSON format.
+---
 
-Use this JSON schema:
+## 1. 快速開始：食譜資料擷取 (Recipe Extractor)
 
-Recipe = {'recipe_name':str, 'ingredients':list[str]}
-Return: list[Recipe]"""
+本範例示範如何從非結構化的食譜描述中，擷取並轉換為包含 `object`、`array`、`string`、`integer` 等型別的標準 JSON。
 
-result = client.models.generate_content(
-    model="gemini-3.7-flash",
-    contents=prompt
-)
-json_str = result.text.replace('```json', '').replace('```', '')  # 去除 markdown 圍欄
-json_structure = json.loads(json_str)  # 轉換成資料結構
-json_structure
-```
-
-- **使用中文範例1**
+### Python (Interactions API 推薦寫法)
 
 ```python
+from typing import List, Optional
 from google import genai
-import os
-import json
+from pydantic import BaseModel, Field
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-prompt = """最常見的5種中式料理食譜,請條列式的方法列出食材,並使用json的格式輸出
-
-Use this JSON schema:
-
-Recipe = {'recipe_name':str, 'ingredients':list[str]}
-Return: list[Recipe]"""
-
-result = client.models.generate_content(
-    model="gemini-3.7-flash",
-    contents=prompt
-)
-json_str = result.text.replace('```json', '').replace('```', '')  # 去除 markdown 圍欄
-json_structure = json.loads(json_str)  # 轉換成資料結構
-json_structure
-```
-
-<details>
-<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入食譜 JSON 視覺化介面</b></summary>
-
-**Gradio 介面開發 Prompt：**
-```text
-請幫我將上述「透過提示詞生成食譜 JSON」的程式改寫為 Gradio 應用：
-1. 提供輸入框讓使用者輸入想查詢的料理類型（如「中式料理」、「義大利麵」、「減脂餐」）。
-2. 呼叫 Gemini 3.7 Flash 產生符合 Recipe JSON 格式的內容。
-3. 介面同時以 `gr.JSON` 呈現結構化資料，並以 `gr.Dataframe` 或 `gr.Markdown` 呈現排版後的食譜清單。
-```
-
-**Streamlit 介面開發 Prompt：**
-```text
-請幫我將上述程式改寫為 Streamlit 應用：
-1. 介面提供料理主題輸入框與數量拉桿（st.slider）。
-2. 呼叫 Gemini 3.7 Flash 生成 JSON，並用 json.loads 解析。
-3. 使用 `st.json` 呈現原始 JSON，並用 `st.expander` 逐一展示每道菜的食材清單。
-```
-</details>
-
-**範例2**
-- 取得台灣銀行牌告匯率
-- 取得牌告匯率的表格
-- 轉換為csv的字串格式
-- 儲存為現在日期.csv檔案
-
-```python
-#輸出csv字串,並且儲存為檔案
-import requests
-from bs4 import BeautifulSoup
-import os
-from datetime import datetime
-from google import genai
-from google.genai import types
-
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-response = requests.get('https://rate.bot.com.tw/xrt?Lang=zh-TW')
-soup = BeautifulSoup(response.text,"html.parser")
-body_content = soup.body
-for script_or_style in body_content(['script','style']):
-    script_or_style.extract()
-
-table_content = body_content.find(title='牌告匯率')
-table_lines = table_content.get_text(separator='\n')
-cleaned_content = "\n".join(
-    [line.strip() for line in table_lines.splitlines() if line.strip()]
-    )
-
-system_instruction = '''
-1. 你的任務是取出指定的內容,並輸出成csv的格式
-2. 只要輸出csv格式的字串,不要有多餘的文字
-
-請依照下面的指示:
-### 如果找到下面的樣本:
-```
-澳幣 (AUD)
-澳幣 (AUD)
-20.15
-20.93
-20.365
-20.71
-```
-
-### 輸出的csv格式:
-1. 第1欄:有欄位名稱
-2. 欄位名稱
-- 幣別:str國幣的名稱
-- 幣別代碼:str國家的代碼
-- `現金匯率(本行買入)`:float,無法轉換請用null
-- `現金匯率(本行賣出)`:float,無法轉換請用null
-- `即期匯率(本行買入)`:float,無法轉換請用null
-- `即期匯率(本行賣出)`:float,無法轉換請用null
-
-### 輸出的樣本
-```
-幣別,幣別代碼,現金匯率(本行買入),現金匯率(本行賣出),即期匯率(本行買入),即期匯率(本行賣出)
-澳幣,AUD,20.15,20.93,20.365,20.71
-```
-'''
-
-response = client.models.generate_content(
-    model="gemini-3.7-flash",
-    contents=cleaned_content,
-    config=types.GenerateContentConfig(system_instruction=system_instruction)
-)
-result_text = response.text
-
-#給程式執行的function
-def text_to_csv(csv_text:str):
-    '''
-    將傳入的csv格式字串,儲存為以現在日期為檔案名稱的csv檔
-    '''
-    current = datetime.now()
-    filename = current.strftime("%Y_%m_%d") + ".csv"
-    with open(filename, 'w', encoding='utf-8') as file:
-        file.write(csv_text)
-
-text_to_csv(result_text)
-```
-
-<details>
-<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入匯率爬蟲與即時表格展示介面</b></summary>
-
-**Gradio 介面開發 Prompt：**
-```text
-請幫我將上述「爬取台灣銀行牌告匯率並由 Gemini 轉換為 CSV」的程式改寫為 Gradio 應用：
-1. 介面包含「立即抓取牌告匯率」按鈕。
-2. 點擊後執行爬蟲與 Gemini 格式轉換，並將產出的 CSV 字串透過 pandas 載入，以 `gr.Dataframe` 呈現美觀的匯率表格。
-3. 提供 `gr.DownloadButton` 或 `gr.File` 讓使用者一鍵下載生成的 CSV 檔案。
-```
-
-**Streamlit 介面開發 Prompt：**
-```text
-請幫我將上述程式改寫為 Streamlit 應用：
-1. 使用 `st.button("🔄 更新即時牌告匯率")` 觸發爬蟲與 Gemini CSV 轉換。
-2. 將結果轉換為 pandas DataFrame，並使用 `st.dataframe` 展示（支援排序與欄位搜尋）。
-3. 提供 `st.download_button` 供使用者下載當日匯率 CSV 檔案。
-```
-</details>
-
-
-### 提供 json schema 給 model 配置(比較精準)
-
-新版 SDK 直接支援以 **Pydantic `BaseModel`**、`TypedDict` 或 `list[...]` 當作 `response_schema`；模型會保證輸出符合結構。以下使用 Pydantic（官方目前推薦寫法）。
-
-**英文**
-
-```python
-from google import genai
-from google.genai import types
-from pydantic import BaseModel
-import os
-import json
+# 1. 定義資料結構模型
+class Ingredient(BaseModel):
+    name: str = Field(description="食材名稱")
+    quantity: str = Field(description="食材份量與單位，例如：2 湯匙、100g")
 
 class Recipe(BaseModel):
-    recipe_name: str
-    ingredients: list[str]
+    recipe_name: str = Field(description="食譜名稱")
+    prep_time_minutes: Optional[int] = Field(description="預估準備時間（分鐘）")
+    ingredients: List[Ingredient] = Field(description="食材清單")
+    instructions: List[str] = Field(description="料理步驟清單")
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-result = client.models.generate_content(
+client = genai.Client()
+
+prompt = """
+請從以下文字中擷取美味巧克力豆餅乾的食譜：
+這道巧克力豆餅乾需要中筋麵粉 2 又 1/4 杯、小蘇打粉 1 茶匙、鹽 1 茶匙、
+軟化無鹽奶油 1 杯、細砂糖 3/4 杯、黑糖 3/4 杯、香草精 1 茶匙與 2 顆大雞蛋。
+最後加入 2 杯半甜巧克力豆。
+步驟：首先將烤箱預熱至 190°C (375°F)。在小碗中將麵粉、小蘇打和鹽混合均勻。
+在另一個大碗中將奶油與兩種糖打發至蓬鬆。依序打入香草精與雞蛋。
+分次拌入乾粉料，最後倒入巧克力豆。用湯匙舀至烤盤上，烘烤 9 至 11 分鐘。
+預估準備時間約 15 分鐘。
+"""
+
+# 2. 呼叫 Interactions API
+interaction = client.interactions.create(
     model="gemini-3.7-flash",
-    contents='List a few popular cookie recipes.',
-    config=types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_schema=list[Recipe]
-    )
+    input=prompt,
+    response_format={
+        "type": "text",
+        "mime_type": "application/json",
+        "schema": Recipe.model_json_schema()
+    },
 )
-json_structure = json.loads(result.text)
-json_structure
 
-# 也可以直接取得解析後的 Python 物件：
-recipes: list[Recipe] = result.parsed
+# 3. 解析並轉為型別安全的 Pydantic 物件
+recipe = Recipe.model_validate_json(interaction.output_text)
+print(f"食譜名稱: {recipe.recipe_name}")
+print(f"準備時間: {recipe.prep_time_minutes} 分鐘")
+print("食材清單:")
+for item in recipe.ingredients:
+    print(f"  - {item.name}: {item.quantity}")
 ```
 
-**中文**
+### Python (GenerateContent API 對照寫法)
 
 ```python
 from google import genai
 from google.genai import types
-from pydantic import BaseModel
-import os
-import json
+from pydantic import BaseModel, Field
 
 class Recipe(BaseModel):
-    recipe_name: str
-    ingredients: list[str]
+    recipe_name: str = Field(description="食譜名稱")
+    ingredients: list[str] = Field(description="食材清單")
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-result = client.models.generate_content(
-    model="gemini-3.7-flash",
-    contents='最常見的5種中式料理食譜,請條列式的方法列出食材和食材的份量,並使用json的格式輸出,請使用繁體中文',
-    config=types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_schema=list[Recipe]
-    )
-)
-json_structure = json.loads(result.text)
-json_structure
-```
-
-<details>
-<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入 Pydantic 結構化資料生成介面</b></summary>
-
-**Gradio 介面開發 Prompt：**
-```text
-請幫我將上述使用 Pydantic BaseModel 定義 response_schema 的 Gemini 程式改寫為 Gradio 應用：
-1. 介面提供文字輸入框（例如輸入「我想做 3 道低卡雞胸肉料理」）。
-2. 設定 response_schema=list[Recipe] 並獲取結構化輸出。
-3. 使用 `gr.Dataframe` 或 `gr.JSON` 呈現解析後的食譜名稱與食材份量清單。
-```
-
-**Streamlit 介面開發 Prompt：**
-```text
-請幫我將上述程式改寫為 Streamlit 應用：
-1. 提供輸入框讓使用者描述想產生的食譜需求。
-2. 呼叫 Gemini API（帶入 Pydantic schema）取得 result.parsed。
-3. 以 Streamlit 卡片（st.container(border=True)）排版，每張卡片展示一道料理名稱與標籤化的食材清單。
-```
-</details>
-
-
-**將 model 輸出的 json 文字轉換為 python 的資料結構**
-
-```python
-import os
-import json
-from google import genai
-from google.genai import types
-
-with open('2025_01_29.csv',encoding='utf-8') as file:
-    csv_content = file.read()
-
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-system_instruction = '''
-## 請依據以下的csv格式的文字回答問題
-## 這個表格是銀行的台幣和各幣值的轉換匯率
-## 如果沒有資料,請輸出`沒有相關幣的資料`
-## 規則:
-    1.如果使用者輸入的是台幣要換取美金,換算公式為:
-    `台幣/現金匯率本行賣出的美金價格=`
-    2.如果使用者輸入的是美金換取台幣,換算公式為:
-    `現金匯率本行買入美金*美金的金額=`
-    3.如果不是換成台幣,請先將金額換成台幣後,再轉換為使用者要求的幣值
-''' + csv_content
+client = genai.Client()
 
 response = client.models.generate_content(
     model="gemini-3.7-flash",
-    contents='''
-1. 以現有的資料,台幣可以換算的幣值有那一些?
-2. 請排除無法計算的幣別
-3. 請加入台幣
-''',
+    contents="請列出3道熱門的台灣夜市小吃食譜",
     config=types.GenerateContentConfig(
-        system_instruction=system_instruction,
         response_mime_type="application/json",
-        response_schema=list[str]
-    )
+        response_schema=list[Recipe],
+    ),
 )
-type(json.loads(response.text))
 
-#====output====
-list
+# 直接透過 response.parsed 取得解析後的物件
+recipes: list[Recipe] = response.parsed
+for r in recipes:
+    print(r.recipe_name, r.ingredients)
 ```
 
-**gradio介面(匯率換算)**
+### JavaScript / TypeScript (Zod)
+
+```typescript
+import { GoogleGenAI } from "@google/genai";
+import * as z from "zod";
+
+const recipeJsonSchema = {
+  type: "object",
+  properties: {
+    recipe_name: { type: "string", description: "食譜名稱" },
+    prep_time_minutes: { type: "integer", description: "準備時間（分鐘）" },
+    ingredients: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "食材名稱" },
+          quantity: { type: "string", description: "份量" },
+        },
+        required: ["name", "quantity"],
+      },
+    },
+    instructions: {
+      type: "array",
+      items: { type: "string" },
+    },
+  },
+  required: ["recipe_name", "ingredients", "instructions"],
+};
+
+const recipeSchema = z.fromJSONSchema(recipeJsonSchema);
+const client = new GoogleGenAI({});
+
+const interaction = await client.interactions.create({
+  model: "gemini-3.7-flash",
+  input: "請擷取巧克力豆餅乾的食譜...",
+  response_format: {
+    type: "text",
+    mime_type: "application/json",
+    schema: recipeJsonSchema,
+  },
+});
+
+const recipe = recipeSchema.parse(JSON.parse(interaction.output_text));
+console.log(recipe);
+```
+
+### REST API
+
+```bash
+curl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions" \
+    -H "x-goog-api-key: $GEMINI_API_KEY" \
+    -H 'Content-Type: application/json' \
+    -H "Api-Revision: 2026-05-20" \
+    -d '{
+      "model": "gemini-3.7-flash",
+      "input": "請擷取巧克力豆餅乾的食譜...",
+      "response_format": {
+        "type": "text",
+        "mime_type": "application/json",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "recipe_name": { "type": "string" },
+            "prep_time_minutes": { "type": "integer" },
+            "ingredients": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "quantity": { "type": "string" }
+                },
+                "required": ["name", "quantity"]
+              }
+            },
+            "instructions": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "required": ["recipe_name", "ingredients", "instructions"]
+        }
+      }
+    }'
+```
+
+---
+
+## 2. 進階場景：條件結構與多態分類 (`anyOf` / `Union`)
+
+在內容審查或分類情境中，輸出格式可能根據判定結果而有不同欄位。可使用 `Union` 或 `anyOf` 達成多態分支。
 
 ```python
-import gradio as gr
-import os
-import json
+from typing import Literal, Union
 from google import genai
-from google.genai import types
+from pydantic import BaseModel, Field
 
-with open('2025_01_29.csv',encoding='utf-8') as file:
-    csv_content = file.read()
+class SpamDetails(BaseModel):
+    reason: str = Field(description="判定為垃圾/釣魚內容的具體原因")
+    spam_type: Literal["phishing", "scam", "unsolicited_promotion", "other"] = Field(
+        description="垃圾訊息類型"
+    )
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+class SafeDetails(BaseModel):
+    summary: str = Field(description="安全內容的簡要摘要")
+    is_safe: bool = Field(description="是否適合全年齡閱覽")
 
-base_instruction = '''
-## 請依據以下的csv格式的文字回答問題
-## 這個表格是銀行的台幣和各幣值的轉換匯率
-## 如果沒有資料,請輸出`沒有相關幣的資料`
-## 規則:
-    1.如果使用者輸入的是台幣要換取美金,換算公式為:
-    `台幣/現金匯率本行賣出的美金價格=`
-    2.如果使用者輸入的是美金換取台幣,換算公式為:
-    `現金匯率本行買入美金*美金的金額=`
-    3.如果不是換成台幣,請先將金額換成台幣後,再轉換為使用者要求的幣值
-''' + csv_content
+class ModerationResult(BaseModel):
+    decision: Union[SpamDetails, SafeDetails] = Field(
+        description="根據內容自動判斷為垃圾或正常安全訊息"
+    )
 
-# 取得可換算的幣別清單(JSON)
-response = client.models.generate_content(
+client = genai.Client()
+
+prompt = """
+請審查以下訊息：
+'恭喜！您已獲選為本年度幸運得主，可獲得免費郵輪旅遊！請立即點擊連結領獎：www.definitely-not-a-scam.com'
+"""
+
+interaction = client.interactions.create(
     model="gemini-3.7-flash",
-    contents='''
-1. 以現有的資料,台幣可以換算的幣值有那一些?
-2. 請排除無法計算的幣別
-3. 請加入台幣
-''',
-    config=types.GenerateContentConfig(
-        system_instruction=base_instruction,
-        response_mime_type="application/json",
-        response_schema=list[str]
-    )
+    input=prompt,
+    response_format={
+        "type": "text",
+        "mime_type": "application/json",
+        "schema": ModerationResult.model_json_schema(),
+    },
 )
 
+result = ModerationResult.model_validate_json(interaction.output_text)
+print(result.model_dump_json(indent=2))
+```
 
-with gr.Blocks() as demo:
-    currencies = json.loads(response.text)
-    currency_in = "台幣"
-    currency_out = ""
-    gr.Markdown('''
-        ## 匯率試算
-        **資料來源:臺灣銀行牌告匯率**
-    ''')
+---
 
-    in_radio = gr.Radio(currencies,label='持有幣別',info="您手上的幣別",value=currency_in)
-    out_radio = gr.Radio(currencies,label='兑換幣別',info="您要轉換幣別")
+## 3. 進階場景：遞迴樹狀結構 (Recursive Hierarchy)
 
-    with gr.Row():
-        number = gr.Number(value=0,label=f'{currency_in}轉換為{currency_out}',visible=True)
-        btn = gr.Button(value = '計算',visible=True)
+Gemini 支援定義遞迴資料模型（例如組織架構樹、目錄樹或留言回覆串）：
 
-    result_markdown = gr.Markdown()
+```python
+from typing import List
+from google import genai
+from pydantic import BaseModel, Field
 
-    def radio_change(in_radio_value, in_output_value):
-        """
-        使用者一選取,radio,做一些初始動作
-        """
-        currencies_copy = currencies.copy()
-        currencies_copy.remove(in_radio_value)
-        if in_radio_value and in_output_value:
-
-            return [
-                    gr.Number(visible=True,label=f'{in_radio_value}轉換為{in_output_value}',interactive=True),
-                    gr.Button(visible=True),
-                    gr.Radio(currencies_copy,label='兑換幣別',info="您要轉換幣別")
-                ]
-        else:
-            return [
-                    gr.Number(visible=False),
-                    gr.Button(visible=False),
-                    gr.Radio(currencies_copy,label='兑換幣別',info="您要轉換幣別")
-                ]
-
-    demo.load(lambda:[gr.Number(visible=False),gr.Button(visible=False)],outputs=[number, btn]) #一開始不顯示
-
-    gr.on(
-        triggers = [in_radio.change,out_radio.change],
-        fn=radio_change,
-        inputs = [in_radio,out_radio],
-        outputs = [number,btn,out_radio]
+class Employee(BaseModel):
+    name: str = Field(description="員工姓名")
+    employee_id: int = Field(description="員工編號")
+    reports: List["Employee"] = Field(
+        default_factory=list,
+        description="向該員工直接匯報的下屬清單（遞迴結構）"
     )
 
-    @btn.click(inputs=[number,in_radio,out_radio,],outputs=result_markdown)
-    def btn_click(number_value,in_radio_value,in_output_value):
-        message = [f"請將{number_value}{in_radio_value}轉換為{in_output_value}","請輸出為markdown格式"]
-        response = client.models.generate_content(
-            model="gemini-3.7-flash",
-            contents=message,
-            config=types.GenerateContentConfig(system_instruction=base_instruction)
-        )
-        return response.text
+client = genai.Client()
 
-demo.launch()
+prompt = """
+請根據以下描述建立團隊組織架構：
+Alice (ID: 101) 是總監，底下管理 Bob (ID: 102) 與 Charlie (ID: 103)。
+Bob 底下管理工程師 David (ID: 104)。
+"""
+
+interaction = client.interactions.create(
+    model="gemini-3.7-flash",
+    input=prompt,
+    response_format={
+        "type": "text",
+        "mime_type": "application/json",
+        "schema": Employee.model_json_schema(),
+    },
+)
+
+org_chart = Employee.model_validate_json(interaction.output_text)
+print(org_chart.model_dump_json(indent=2))
 ```
 
-![](./images/pic1.png)
+---
 
-<details>
-<summary>🤖 <b>AI 賦能提示詞 (Prompts)：將此匯率換算改寫為 Streamlit 介面</b></summary>
+## 4. 進階場景：結構化串流輸出 (Streaming)
 
-**Streamlit 介面開發 Prompt：**
-```text
-請幫我將上述 Gradio 匯率試算應用程式改寫為 Streamlit 應用程式：
-1. 讀取 2025_01_29.csv 並透過 Gemini 結構化輸出取得幣別清單。
-2. 使用 `st.selectbox` 分別選擇「持有幣別」與「兌換幣別」，並使用 `st.number_input` 輸入兌換金額。
-3. 按下「計算匯率」按鈕後，呼叫 Gemini 3.7 Flash 進行換算，並以 `st.success` 與 `st.markdown` 呈現換算結果與計算公式細節。
-```
-</details>
-
-### 使用列舉(enum)限定結果輸出
-
-在某些情況下，您可能希望模型從選項清單中選擇選項。為了實現此行為，您可以在配置設定中傳遞一個列舉。您可以在 `response_schema` 中任何地方使用列舉，列舉實際上是字串清單。
+若要在生成的同時逐步接收 JSON 數據，可啟用 `stream=True`。伺服器會串流傳送合法的 partial JSON 片段：
 
 ```python
 from google import genai
-from google.genai import types
+from pydantic import BaseModel
+from typing import Literal
+
+class Feedback(BaseModel):
+    sentiment: Literal["positive", "neutral", "negative"]
+    summary: str
+
+client = genai.Client()
+
+stream = client.interactions.create(
+    model="gemini-3.7-flash",
+    input="請為最新一代的智慧手錶撰寫一段詳細的使用者評價。",
+    response_format={
+        "type": "text",
+        "mime_type": "application/json",
+        "schema": Feedback.model_json_schema(),
+    },
+    stream=True,
+)
+
+print("即時串流接收中: ", end="", flush=True)
+for event in stream:
+    if event.event_type == "step.delta" and event.delta.text:
+        print(event.delta.text, end="", flush=True)
+print()
+```
+
+---
+
+## 5. 進階場景：結構化輸出結合內建工具 (With Tools)
+
+Gemini 3 世代模型支援將結構化輸出與內建工具結合（例如 **Google Search 聯網搜尋**、**URL Context**、**Code Execution** 或 **Function Calling**）。模型會先透過工具獲取最新聯網資料，再將最終答案整理成指定的 JSON Schema：
+
+```python
+from google import genai
+from pydantic import BaseModel, Field
+from typing import List
+
+class MatchResult(BaseModel):
+    winner: str = Field(description="獲勝隊伍名稱")
+    final_match_score: str = Field(description="最終比分")
+    scorers: List[str] = Field(description="進球或得分球員名單")
+
+client = genai.Client()
+
+interaction = client.interactions.create(
+    model="gemini-3.7-flash",
+    input="請搜尋最新一屆歐洲國家盃 (UEFA Euro) 決賽的完整戰報。",
+    tools=[{"type": "google_search"}, {"type": "url_context"}],
+    response_format={
+        "type": "text",
+        "mime_type": "application/json",
+        "schema": MatchResult.model_json_schema(),
+    },
+)
+
+result = MatchResult.model_validate_json(interaction.output_text)
+print(result)
+```
+
+---
+
+## 6. 使用列舉 (Enum) 限制輸出選項
+
+當只需要模型從固定清單中擇一回答時，可以使用 Enum 或 `text/x.enum`：
+
+```python
 import enum
-import os
+from google import genai
+from google.genai import types
 
-class Choice(enum.Enum):
+class InstrumentType(enum.Enum):
     PERCUSSION = "Percussion"
     STRING = "String"
     WOODWIND = "Woodwind"
     BRASS = "Brass"
     KEYBOARD = "Keyboard"
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-organ = client.files.upload(file='organ.jpg')
+client = genai.Client()
+organ_image = client.files.upload(file="organ.jpg")
+
 result = client.models.generate_content(
     model="gemini-3.7-flash",
-    contents=['What kind of instrument is this:', organ],
+    contents=["請問這張圖片中的樂器屬於哪一種類型？", organ_image],
     config=types.GenerateContentConfig(
         response_mime_type="text/x.enum",
-        response_schema=Choice
-    )
+        response_schema=InstrumentType,
+    ),
 )
-print(result.text)
+print(f"樂器分類結果: {result.text}")
 ```
 
-### 使用dict代替列舉
+---
+
+## 7. 實戰範例：牌告匯率轉換與 Gradio / Streamlit 介面
+
+本範例結合爬蟲資料與 Gemini 結構化輸出，動態分析支援的貨幣並提供即時換算功能。
 
 ```python
-from google import genai
-from google.genai import types
 import os
-
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-organ = client.files.upload(file='organ.jpg')
-result = client.models.generate_content(
-    model="gemini-3.7-flash",
-    contents=['What kind of instrument is this:', organ],
-    config=types.GenerateContentConfig(
-        response_mime_type="text/x.enum",
-        response_schema={
-            'type': 'STRING',
-            'enum': ["Percussion", "String", "Woodwind", "Brass", "Keyboard"]
-        }
-    )
-)
-print(result.text)
-```
-
-### 整合 json schema 和 enum 的應用
-
-```python
+import gradio as gr
 from google import genai
-from google.genai import types
-from pydantic import BaseModel
-import enum
-import os
+from pydantic import BaseModel, Field
 
-class Grade(enum.Enum):
-    A_PLUS = "a+"
-    A = "a"
-    B = "b"
-    C = "c"
-    D = "d"
-    F = "f"
+with open("2025_01_29.csv", encoding="utf-8") as file:
+    csv_content = file.read()
 
-class Recipe(BaseModel):
-    recipe_name: str
-    grade: Grade
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-result = client.models.generate_content(
+base_instruction = f"""
+## 請依據以下的 CSV 表格內容回答問題：
+{csv_content}
+## 換算規則：
+1. 台幣換外幣：金額 / 現金賣出匯率
+2. 外幣換台幣：金額 * 現金買入匯率
+"""
+
+class CurrencyList(BaseModel):
+    currencies: list[str] = Field(description="支援換算的幣別名稱清單")
+
+# 透過結構化輸出取得幣別清單
+interaction = client.interactions.create(
     model="gemini-3.7-flash",
-    contents="List about 10 cookie recipes, grade them based on popularity",
-    config=types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_schema=list[Recipe]
-    )
+    input="請列出資料中所有可供換算的幣別清單，並加入「台幣」",
+    response_format={
+        "type": "text",
+        "mime_type": "application/json",
+        "schema": CurrencyList.model_json_schema(),
+    },
+    system_instruction=base_instruction,
 )
-print(result.text)
+
+currency_data = CurrencyList.model_validate_json(interaction.output_text)
+currencies = currency_data.currencies
+
+with gr.Blocks(title="Gemini 牌告匯率換算") as demo:
+    gr.Markdown("# 💱 智慧匯率換算助理")
+    in_radio = gr.Radio(currencies, label="持有幣別", value="台幣")
+    out_radio = gr.Radio(currencies, label="兌換幣別")
+    number = gr.Number(value=1000, label="兌換金額")
+    btn = gr.Button("開始計算", variant="primary")
+    result_markdown = gr.Markdown()
+
+    def calculate(num, curr_in, curr_out):
+        if not curr_in or not curr_out:
+            return "請選擇持有幣別與兌換幣別！"
+        prompt = f"請將 {num} {curr_in} 轉換為 {curr_out}，並以 Markdown 詳細列出計算步驟。"
+        res = client.interactions.create(
+            model="gemini-3.7-flash",
+            input=prompt,
+            system_instruction=base_instruction,
+        )
+        return res.output_text
+
+    btn.click(calculate, inputs=[number, in_radio, out_radio], outputs=result_markdown)
+
+if __name__ == "__main__":
+    demo.launch()
 ```
 
 <details>
-<summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入評分分類與統計介面</b></summary>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：快速轉為 Streamlit 介面</b></summary>
 
-**Gradio 介面開發 Prompt：**
 ```text
-請幫我將上述 Enum + Pydantic 食譜評分程式改寫為 Gradio 應用：
-1. 介面提供商品或主題輸入框（例如「10種熱門甜點」）。
-2. 調用帶有 Grade Enum 的 Schema 讓模型輸出結構化評分資料。
-3. 使用 `gr.Dataframe` 呈現表格，並根據 Grade 等級以不同顏色標示（如 a+ 標示綠色、f 標示紅色）。
-```
-
-**Streamlit 介面開發 Prompt：**
-```text
-請幫我將上述 Enum + Pydantic 程式改寫為 Streamlit 應用：
-1. 提供主題輸入框與數量設定，按下生成後呼叫 Gemini API 產出結構化評分資料。
-2. 將結果轉換為 DataFrame 並以 `st.dataframe` 展示。
-3. 使用 `st.bar_chart` 統計各評分等級（a+, a, b, c...）的數量分布長條圖。
+請幫我將上述 Gradio 匯率試算程式改寫為 Streamlit 應用程式：
+1. 使用 st.selectbox 選擇持有幣別與兌換幣別。
+2. 使用 st.number_input 輸入換算金額。
+3. 點擊「計算」按鈕後，呼叫 Gemini 3.7 Flash 執行匯率試算，並以 st.success 與 st.markdown 呈現排版結果。
 ```
 </details>
 
+---
+
+## 8. JSON Schema 支援規格詳細說明
+
+Gemini 的結構化輸出支援 [JSON Schema](https://json-schema.org/) 的核心子集：
+
+### 支援型別 (`type`)
+- `string`：字串文字
+- `number`：浮點數
+- `integer`：整數
+- `boolean`：布林值 (`true` / `false`)
+- `object`：包含鍵值對的結構化物件
+- `array`：清單陣列
+- `null`：支援空值（例如 `{"type": ["string", "null"]}`）
+
+### 描述與型別屬性
+| 屬性 | 適用型別 | 說明 |
+|---|---|---|
+| `title` | 所有型別 | 屬性簡稱 |
+| `description` | 所有型別 | 詳細屬性說明，**強烈建議撰寫**以提高模型精確度 |
+| `properties` | `object` | 物件所包含的各欄位 Schema |
+| `required` | `object` | 必填欄位清單 |
+| `additionalProperties` | `object` | 是否允許額外未定義的鍵值 |
+| `enum` | `string` / `number` | 列舉限定的合法取值清單 |
+| `format` | `string` | 格式約束（如 `date-time`, `date`, `time` 等） |
+| `minimum` / `maximum` | `number` / `integer` | 數值範圍限制 |
+| `items` | `array` | 陣列元素的 Schema 定義 |
+| `minItems` / `maxItems` | `array` | 陣列元素長度上下限 |
+
+---
+
+## 9. 結構化輸出 (Structured Outputs) vs 函式呼叫 (Function Calling)
+
+| 特性 | Structured Outputs (結構化輸出) | Function Calling (函式呼叫) |
+|---|---|---|
+| **主要定位** | **格式化最終回答** | **對話中的即時動作與工具調度** |
+| **使用時機** | 需要模型輸出固定格式（如 JSON、表格）供前端或資料庫存取時 | 模型需要呼叫外部 API/資料庫查詢資訊後再回答使用者時 |
+| **執行流程** | 單次生成或串流直接返回 JSON 資料 | 產生 Function Call 請求 ➔ 客戶端執行並回傳 Function Result ➔ 模型產出最終解答 |
+
+---
+
+## 10. 最佳實踐 (Best Practices)
+
+1. **詳盡的欄位說明 (`description`)**：在 Pydantic `Field(description=...)` 或 JSON Schema `description` 中提供清晰說明，能大幅提升提取準確度。
+2. **優先使用強型別 (`Strong Typing`)**：使用 `integer`、`enum`、`Literal`、`bool` 而非一律使用 `string`。
+3. **客戶端資料驗證**：模型輸出的 JSON 語法一定符合 Schema，但業務邏輯或數值合理性仍建議在應用層進行驗證（例如使用 `model_validate_json`）。
+4. **控制 Schema 複雜度**：避免過於深層的巢狀結構，可適度拆分模型以維持最佳推理效能與回應速度。

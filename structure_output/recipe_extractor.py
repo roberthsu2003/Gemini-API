@@ -1,42 +1,46 @@
 import os
-import json
 from google import genai
-from google.genai import types
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
-# 使用 Pydantic 定義輸出結構(新版 google-genai 推薦寫法)
+# 定義食譜模型
 class Recipe(BaseModel):
-    recipe_name: str
+    recipe_name: str = Field(description="食物或料理的名稱")
+    category: str = Field(description="料理類型或分類，例如：年菜、甜點、零嘴")
 
 
-class Recipes(BaseModel):
-    recipes: list[Recipe]
+class RecipeList(BaseModel):
+    recipes: list[Recipe] = Field(description="食物食譜清單")
 
 
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-chat = client.chats.create(
-    model="gemini-flash-latest",
-    config=types.GenerateContentConfig(
-        system_instruction="請取出食物的名字",
-        temperature=1,
-        top_p=0.95,
-        top_k=40,
-        max_output_tokens=8192,
-        response_mime_type="application/json",
-        response_schema=Recipes,
-    ),
+prompt = """
+請從以下文字中取出所有食物料理名稱與分類：
+1. 過年零嘴「花生酥餅」做法超簡單！香脆應景一口接一口
+2. 棉花糖香蕉巧克力吐司 | 零技巧療癒甜點
+3. 黃金鯧魚米粉 | 古早味台式開運年菜暖呼呼上桌
+"""
+
+# 使用 Interactions API 與 response_format 生成結構化輸出
+interaction = client.interactions.create(
+    model="gemini-3.7-flash",
+    input=prompt,
+    response_format={
+        "type": "text",
+        "mime_type": "application/json",
+        "schema": RecipeList.model_json_schema(),
+    },
 )
 
-response = chat.send_message(
-    "過年零嘴「花生酥餅」做法超簡單！\n"
-    "香脆應景一口接一口,棉花糖香蕉巧克力吐司 | 零技巧療癒甜點\n"
-    "黃金鯧魚米粉 | 古早味台式開運年菜暖呼呼上桌"
-)
+# 使用 Pydantic 驗證並解析結果
+result = RecipeList.model_validate_json(interaction.output_text)
+print("--- 解析結果 (Pydantic 物件) ---")
+for r in result.recipes:
+    print(f"料理: {r.recipe_name} | 分類: {r.category}")
 
-print(response.text)
-print(json.loads(response.text))
+print("\n--- 原始 JSON 輸出 ---")
+print(interaction.output_text)
