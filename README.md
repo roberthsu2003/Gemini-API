@@ -182,6 +182,37 @@ print(interaction.output_text)
 - [`document-search-e5.py`](./embeddings/document_search/document-search-e5.py)：Multilingual-E5 開源繁中向量模型檢索
 - [`gemini_embedding_tutorial.ipynb`](./embeddings/document_search/gemini_embedding_tutorial.ipynb)：Gemini 向量嵌入與語意相似度互動教學
 
+### [7. 聯網搜尋 (ground_search)](./ground_search)
+- [`basic_search.py`](./ground_search/basic_search.py)：基礎 Google Search 聯網搜尋
+- [`search_citations.py`](./ground_search/search_citations.py)：解析搜尋步驟與引用來源網址
+- [`search_with_code_execution.py`](./ground_search/search_with_code_execution.py)：Google Search 搜尋與 Python 運算混合實戰
+- [`search_structured_output.py`](./ground_search/search_structured_output.py)：Google Search 搜尋與 Pydantic 結構化提取實戰
+
+### [8. 圖像生成 (image_generation)](./image_generation)
+- [`text_to_image_imagen.py`](./image_generation/text_to_image_imagen.py)：Imagen 3 基礎文字生成高品質圖片
+- [`aspect_ratio_control.py`](./image_generation/aspect_ratio_control.py)：自訂長寬比例（16:9、9:16、1:1）生成範例
+- [`gemini_flash_image.py`](./image_generation/gemini_flash_image.py)：Gemini 2.5 Flash Image 多模態圖像生成
+- [`prompt_enhancer_and_generator.py`](./image_generation/prompt_enhancer_and_generator.py)：Gemini 擴寫提示詞 ➔ 自動調用 Imagen 生成圖片的一條龍工作流
+
+---
+
+## 📦 專案內建完整素材與資料檔 (Assets)
+
+本專案在 GitHub 上已包含所有教學範例所需的完整素材檔案，學生 Clone 專案後**無需自行尋找或下載任何素材**即可直接練習：
+
+- 📄 **PDF 文件**：[`說明書.pdf`](./document_understanding/說明書.pdf)（冷氣壁掛式說明書，4MB，用於長文件問答與快取）
+- 📊 **表格資料**：
+  - [`2025_01_29.csv`](./structure_output/2025_01_29.csv)（臺灣銀行牌告匯率表格）
+  - [`aqx_p_488.csv`](./document_understanding/aqx_p_488.csv)（空氣品質監測資料，134KB）
+  - [`001.csv`](./embeddings/document_search/001.csv)（知識庫說明文件，用於語意檢索）
+- 🖼️ **圖片素材**：
+  - [`organ.jpg`](./structure_output/organ.jpg)（管風琴樂器相片，用於分類與多模態分析）
+  - [`bear.jpg`](./text_generation/bear.jpg)（棕熊相片，用於圖文問答）
+  - [`plant1.jpg`](./text_generation/plant1.jpg) ~ [`plant3.webp`](./text_generation/plant3.webp)（植物相片）
+- 📑 **評測與向量檔**：
+  - [`Embeddings模型評測.xlsx`](./embeddings/document_search/Embeddings模型評測.xlsx)（繁體中文 Embedding 效果評測表）
+  - [`embeddings.pkl`](./embeddings/document_search/pretrain_and_query/embeddings.pkl)（預先計算之向量庫檔案）
+
 ---
 
 ## 🔗 官方參考文件

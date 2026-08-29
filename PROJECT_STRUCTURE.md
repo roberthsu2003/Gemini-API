@@ -37,9 +37,14 @@ Gemini-API/
 - `README.md`：工作流類型（Prompt chaining、Routing、Parallelization 等）、Agent 概念與參考影片
 
 ### text_generation
-- `README.md`：完整文字生成教學（含參數說明）
-- `zero_shot.py`、`text_streaming.py`、`chat.py`、`image_text.py`、`text_to_summarization.py`
-- `quickstart.ipynb`、`tripPlanner.ipynb`
+- `README.md`：文字生成完整指南（涵蓋 Interactions API、Thinking 思考控制、System Instructions、多模態、即時串流、多輪狀態對話與最佳實踐）
+- `zero_shot.py`：Zero-shot 文字生成與 Gradio 互動介面
+- `text_streaming.py`：即時打字機串流生成（SSE 事件監聽）
+- `chat.py`：伺服器端狀態管理（`previous_interaction_id`）多輪串流對話
+- `image_text.py`：多模態圖文問答分析介面
+- `text_to_summarization.py`：文章摘要與語氣風格控制
+- `text_generation_quickstart.ipynb`：Interactions API 快速入門互動筆記本
+- `trip_planner_system_instruction.ipynb`：旅遊規劃與系統指示詞筆記本
 
 ### document_understanding
 - `README.md`：PDF 文件理解完整教學（涵蓋 Inline PDF、Files API、URL 遠端載入、多文件比對、結構化萃取與 Context Caching）
@@ -110,16 +115,41 @@ Gemini-API/
 - `001.csv`：說明文件範例資料
 - `Embeddings模型評測.xlsx`：繁體中文各家 Embedding 效果評測表
 
+### ground_search
+- `README.md`：Google Search 聯網搜尋與事實查核教學（涵蓋即時搜尋、來源引用、Code Execution 混合、Pydantic 結構化）
+- `basic_search.py`：基礎 Google Search 聯網搜尋範例
+- `search_citations.py`：解析搜尋步驟與引用來源網址範例
+- `search_with_code_execution.py`：Google Search 搜尋與 Python 運算混合實戰
+- `search_structured_output.py`：Google Search 搜尋與 Pydantic 結構化提取實戰
+
+### image_generation
+- `README.md`：Imagen 3 與多模態圖像生成教學（涵蓋 Text-to-Image、長寬比控制、gemini-2.5-flash-image 與 Prompt 擴寫產圖工作流）
+- `text_to_image_imagen.py`：Imagen 3 基礎文字生成高品質圖片
+- `aspect_ratio_control.py`：自訂長寬比例（16:9、9:16、1:1）生成範例
+- `gemini_flash_image.py`：Gemini 2.5 Flash Image 多模態圖像生成
+- `prompt_enhancer_and_generator.py`：Gemini 擴寫提示詞 ➔ 自動調用 Imagen 生成圖片的一條龍工作流
+
 ### 開源模型
 - `README.md`：Hugging Face serverless（如 Mistral-Nemo）、總結範例
 - `text_to_summarization.py`、`test.ipynb`
 
 ---
 
-## 範例資料檔
+## 📦 專案內建完整素材與資料檔 (Assets)
 
-- `*.csv`：多處用於匯率、結構化輸出、embedding 等範例（如 `2025_01_29.csv`、`001.csv`）
-- 各子目錄的 `README.md` 若提到 `./images/`，表示需自行準備截圖或示意圖（專案中未附圖片檔）
+本專案已在各章節中附帶所有測試所需的完整素材檔案，學生 Clone 本專案後**無需自行上網尋找或下載任何素材**即可直接執行所有範例：
+
+| 檔案名稱 | 所在目錄 | 檔案用途與適用範例 |
+| :--- | :--- | :--- |
+| `說明書.pdf` | `document_understanding/` | 富士通空調壁掛式說明書（4MB），用於 PDF 視覺理解、多輪問答、規格萃取與 Context Caching 快取。 |
+| `aqx_p_488.csv` | `document_understanding/` | 全台空氣品質即時監測資料（134KB），用於 CSV 數據分析與文件快取。 |
+| `2025_01_29.csv` | `structure_output/`<br>`code_execution/` | 臺灣銀行牌告匯率表格，用於 Pydantic 結構化提取與 Code Execution Python 精確換匯運算。 |
+| `organ.jpg` | `structure_output/`<br>`text_generation/` | 管風琴樂器相片，用於多模態 Enum 列舉分類與圖片局部辨識。 |
+| `bear.jpg` | `text_generation/` | 棕熊相片，用於文字與多模態圖文問答。 |
+| `plant1.jpg` ~ `plant3.webp` | `text_generation/` | 植物與多模態圖片，用於圖文理解與植物辨識。 |
+| `001.csv` | `embeddings/document_search/` | 產品與功能說明文章資料庫，用於向量嵌入與非對稱語意檢索。 |
+| `embeddings.pkl` | `embeddings/.../pretrain_and_query/` | 預先計算好的向量資料檔，可直接載入進行快速比對。 |
+| `Embeddings模型評測.xlsx` | `embeddings/document_search/` | 各家主流 Embedding 模型在繁體中文檢索上的評測對照表。 |
 
 ---
 

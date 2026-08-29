@@ -681,5 +681,5 @@ print("第 2 輪：", interaction2.output_text)
 
 ## 9. 專案範例 Notebook
 
-* [`quickstart.ipynb`](./quickstart.ipynb)：Interactions API 完整語法互動體驗
-* [`tripPlanner.ipynb`](./tripPlanner.ipynb)：旅遊行程規劃與長文本結構化實戰範例
+* [`text_generation_quickstart.ipynb`](./text_generation_quickstart.ipynb)：Interactions API 完整語法互動體驗
+* [`trip_planner_system_instruction.ipynb`](./trip_planner_system_instruction.ipynb)：旅遊行程規劃與長文本結構化實戰範例
