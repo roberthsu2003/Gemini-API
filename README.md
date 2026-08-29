@@ -176,8 +176,11 @@ print(interaction.output_text)
 - [`chat_function_history.ipynb`](./function_calling/chat_function_history.ipynb)：對話歷史與函式呼叫整合
 
 ### [6. 向量檢索 (embeddings)](./embeddings/document_search)
-- [`document-search-e5.py`](./embeddings/document_search/document-search-e5.py)：多語向量模型檢索
-- [`document_search.ipynb`](./embeddings/document_search/document_search.ipynb)：Gemini 向量嵌入與語意相似度計算
+- [`gemini_semantic_similarity.py`](./embeddings/document_search/gemini_semantic_similarity.py)：文本向量嵌入與相似度矩陣
+- [`gemini_document_retrieval.py`](./embeddings/document_search/gemini_document_retrieval.py)：知識庫非對稱語意檢索 (Top-K)
+- [`dimension_reduction.py`](./embeddings/document_search/dimension_reduction.py)：Matryoshka 向量維度縮減 (3072 ➔ 768)
+- [`document-search-e5.py`](./embeddings/document_search/document-search-e5.py)：Multilingual-E5 開源繁中向量模型檢索
+- [`gemini_embedding_tutorial.ipynb`](./embeddings/document_search/gemini_embedding_tutorial.ipynb)：Gemini 向量嵌入與語意相似度互動教學
 
 ---
 

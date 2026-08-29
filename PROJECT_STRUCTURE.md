@@ -95,11 +95,20 @@ Gemini-API/
 - `gradio_example1/`：Gradio 互動式介面整合範例
 
 ### embeddings/document_search
-- `README.md`：Gemini embedding、多語 E5、ChromaDB
-- `document_search*.ipynb`、`document-search-e5.py`
-- `pretrain_and_query/`：CSV + pkl 預訓練與查詢
-- `pretrain_query_chromaDb/`：ChromaDB 向量庫範例
-- `001.csv`：範例資料
+- `README.md`：向量嵌入與語意搜尋教學（涵蓋 gemini-embedding-001/002、MRL 維度縮減、Task Types、多語 E5 與 ChromaDB 整合）
+- `gemini_semantic_similarity.py`：Gemini 文本向量相似度計算與矩陣生成
+- `gemini_document_retrieval.py`：非對稱知識庫語意檢索 (Top-K) 排序
+- `dimension_reduction.py`：Matryoshka 向量維度縮減 (3072 ➔ 768) 示範
+- `document-search-e5.py`：Multilingual-E5 開源繁體中文向量搜尋腳本
+- `gemini_embedding_tutorial.ipynb`：Gemini Embedding 基礎教學筆記本
+- `csv_semantic_search.ipynb`：CSV 文件向量搜尋筆記本
+- `multilingual_e5_test.ipynb`：Multilingual-E5 繁中測試筆記本
+- `multilingual_e5_advanced.ipynb`：Multilingual-E5 進階筆記本
+- `embedding_benchmark.ipynb`：向量模型評測筆記本
+- `pretrain_and_query/`：CSV + pkl 預先向量化與快速查詢
+- `pretrain_query_chromaDb/`：ChromaDB 向量資料庫實戰範例
+- `001.csv`：說明文件範例資料
+- `Embeddings模型評測.xlsx`：繁體中文各家 Embedding 效果評測表
 
 ### 開源模型
 - `README.md`：Hugging Face serverless（如 Mistral-Nemo）、總結範例
