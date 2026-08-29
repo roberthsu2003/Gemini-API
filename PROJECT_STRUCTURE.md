@@ -65,11 +65,21 @@ Gemini-API/
 - `2025_01_29.csv`：匯率範例資料
 
 ### function_calling
-- `README.md`：函式呼叫總覽
-- `simple_sample.ipynb`、`multiFunction.ipynb`、`history.ipynb`
-- `manual_function_calling.ipynb`、`function_calling_chain.ipynb`、`parallel_function_call.ipynb`、`extract_structured_data.ipynb`
-- `example1/`：匯率自動呼叫；`example2/`：手動呼叫
-- `gradio_example1/`：Gradio 介面範例
+- `README.md`：函式呼叫完整教學（涵蓋 4 步驟標準流程、平行呼叫、組合式決策、模式控制、聯網混合與多模態回傳）
+- `meeting_scheduler.py`：會議排程動作執行範例（Interactions API 4 步驟）
+- `weather_assistant.py`：即時天氣知識查詢與解析範例
+- `parallel_function_calling.py`：多設備平行函式呼叫與批量結果回傳範例
+- `multi_tool_search_and_function.py`：Google Search 聯網搜尋與自訂 Function Calling 混合使用範例
+- `basic_function_calling.ipynb`：基礎函式呼叫互動筆記本
+- `multi_function_calling.ipynb`：多函式自動選擇與執行
+- `chat_function_history.ipynb`：多輪對話歷史紀錄與函式呼叫
+- `manual_function_calling.ipynb`：手動解析 Function Call 與執行回傳
+- `function_calling_chain.ipynb`：多步驟鏈式函式呼叫工作流
+- `parallel_function_calling.ipynb`：平行函式呼叫筆記本
+- `extract_structured_data.ipynb`：透過 Function Calling 提取結構化資料
+- `example1/`：臺灣銀行牌告匯率自動呼叫範例
+- `example2/`：臺灣銀行牌告匯率手動呼叫範例
+- `gradio_example1/`：Gradio 互動式介面整合範例
 
 ### embeddings/document_search
 - `README.md`：Gemini embedding、多語 E5、ChromaDB
