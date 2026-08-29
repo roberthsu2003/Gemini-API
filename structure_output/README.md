@@ -200,6 +200,26 @@ curl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions" \
     }'
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：食譜擷取視覺化介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「食譜資料擷取」程式改寫為 Gradio 應用：
+1. 介面提供一個大文本輸入框，讓使用者貼上任何料理文章或食譜描述。
+2. 呼叫 Gemini 3.7 Flash 配合 Pydantic Recipe Schema 進行結構化萃取。
+3. 介面左側展示「食譜名稱」與「準備時間」，右側以 gr.Dataframe 呈現食材清單，下方以條列步驟呈現料理指南。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述食譜萃取程式改寫為 Streamlit 應用：
+1. 介面提供 st.text_area 讓使用者輸入或貼上料理文章。
+2. 按下「開始擷取」按鈕後，呼叫 Gemini API 產出 Recipe 物件。
+3. 使用 st.metric 呈現準備時間，以 st.table 顯示食材與份量，並用 st.checkbox 讓使用者可以勾選已完成的料理步驟。
+```
+</details>
+
 ---
 
 ## 2. 進階場景：條件結構與多態分類 (`anyOf` / `Union`)
@@ -247,6 +267,27 @@ result = ModerationResult.model_validate_json(interaction.output_text)
 print(result.model_dump_json(indent=2))
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：智慧內容安全審查儀表板</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「多態條件結構內容審查」程式改寫為 Gradio 審查儀表板：
+1. 介面提供文字輸入框與預設範例按鈕（例如：釣魚連結、優惠廣告、正常問候）。
+2. 呼叫 Gemini 進行審查並解析 ModerationResult。
+3. 若為垃圾訊息，以紅色警示框顯示 spam_type 與 reason；若為安全訊息，以綠色提示框顯示 summary 與 is_safe 狀態。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述內容審查程式改寫為 Streamlit 應用：
+1. 提供多行輸入框讓使用者輸入待審查留言或信件。
+2. 點擊「執行審查」後，使用 st.spinner 載入，並根據回傳的 decision 類型進行條件排版：
+   - 垃圾內容：以 st.error 顯示警告，並以 st.badge 標籤標記詐騙類型。
+   - 安全內容：以 st.success 呈現審查通過，並附上內容精簡摘要。
+```
+</details>
+
 ---
 
 ## 3. 進階場景：遞迴樹狀結構 (Recursive Hierarchy)
@@ -288,6 +329,26 @@ org_chart = Employee.model_validate_json(interaction.output_text)
 print(org_chart.model_dump_json(indent=2))
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：團隊組織架構樹狀圖視覺化</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「遞迴組織架構圖」程式改寫為 Gradio 應用：
+1. 介面提供輸入框讓使用者輸入團隊成員與從屬關係描述。
+2. 呼叫 Gemini 產出遞迴 Employee 物件。
+3. 將遞迴資料轉換為 Mermaid 樹狀圖語法（graph TD），並使用 gr.Markdown 即時渲染出美觀的組織架構圖。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述組織架構產生程式改寫為 Streamlit 應用：
+1. 提供文字區塊讓使用者自由描述公司組織團隊。
+2. 取得遞迴 JSON 結構後，遞迴產生 Streamlit 的 st.expander 階層目錄樹。
+3. 同步產出 Graphviz (st.graphviz_chart) 視覺化圖表，清晰展示上下級從屬關係。
+```
+</details>
+
 ---
 
 ## 4. 進階場景：結構化串流輸出 (Streaming)
@@ -323,6 +384,26 @@ for event in stream:
 print()
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：即時串流評價分析介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「結構化串流輸出」改寫為 Gradio 即時串流應用：
+1. 提供商品名稱與使用者回饋情境輸入框。
+2. 按下生成後，以 Generator 函式逐步 yield 接收到的 JSON 文字到 gr.Code 或 gr.Textbox 中。
+3. 串流結束後，解析 JSON 並在介面動態呈現情緒標籤（Positive 綠色 / Negative 紅色）與完整摘要。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述結構化串流程式改寫為 Streamlit 應用：
+1. 介面提供使用者輸入體驗描述。
+2. 使用 st.write_stream 或 st.empty() 即時輸出 partial JSON 串流文字。
+3. 完成後自動以 st.json 展示完整物件，並顯示情緒指標儀表板。
+```
+</details>
+
 ---
 
 ## 5. 進階場景：結構化輸出結合內建工具 (With Tools)
@@ -356,6 +437,26 @@ result = MatchResult.model_validate_json(interaction.output_text)
 print(result)
 ```
 
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：即時聯網賽況與新聞戰報看板</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「結合 Google Search 聯網與結構化輸出」程式改寫為 Gradio 體育戰報看板：
+1. 介面提供輸入框讓使用者搜尋近期重大賽事（例如：NBA 總決賽、歐冠決賽、世界棒球經典賽）。
+2. Gemini 透過 Google Search 工具聯網獲取最新賽果，並以 MatchResult Schema 回傳結構化數據。
+3. 介面以大型計分卡排版展示：冠軍隊伍、最終比數、得分球員名單與關鍵賽事摘要。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述聯網賽況程式改寫為 Streamlit 應用：
+1. 介面提供熱門賽事下拉選單與自訂搜尋框。
+2. 呼叫帶有 google_search 工具的結構化 API。
+3. 使用 st.columns 製作計分板卡片，並以 st.pill 或標籤呈現得分球員名單。
+```
+</details>
+
 ---
 
 ## 6. 使用列舉 (Enum) 限制輸出選項
@@ -387,6 +488,26 @@ result = client.models.generate_content(
 )
 print(f"樂器分類結果: {result.text}")
 ```
+
+<details>
+<summary>🤖 <b>AI 賦能提示詞 (Prompts)：多模態圖片列舉分類介面</b></summary>
+
+**Gradio 介面開發 Prompt：**
+```text
+請幫我將上述「多模態樂器 Enum 分類」改寫為 Gradio 圖片分類應用：
+1. 介面提供 gr.Image 讓使用者上傳樂器圖片（支援拖曳上傳與拍照）。
+2. 呼叫 Gemini 3.7 Flash 搭配 InstrumentType Enum 進行精準分類。
+3. 介面顯示分類結果名稱，並附上該樂器種類的介紹與常見樂器代表。
+```
+
+**Streamlit 介面開發 Prompt：**
+```text
+請幫我將上述 Enum 圖片分類程式改寫為 Streamlit 應用：
+1. 提供 st.file_uploader 讓使用者上傳圖片。
+2. 上傳後展示圖片預覽，並呼叫 Gemini 模型以 text/x.enum 獲取分類。
+3. 以 st.success 高亮顯示分類結果，並呈現各樂器分類選項的說明卡片。
+```
+</details>
 
 ---
 
@@ -459,11 +580,13 @@ if __name__ == "__main__":
 <details>
 <summary>🤖 <b>AI 賦能提示詞 (Prompts)：快速轉為 Streamlit 介面</b></summary>
 
+**Streamlit 介面開發 Prompt：**
 ```text
 請幫我將上述 Gradio 匯率試算程式改寫為 Streamlit 應用程式：
-1. 使用 st.selectbox 選擇持有幣別與兌換幣別。
-2. 使用 st.number_input 輸入換算金額。
-3. 點擊「計算」按鈕後，呼叫 Gemini 3.7 Flash 執行匯率試算，並以 st.success 與 st.markdown 呈現排版結果。
+1. 讀取 2025_01_29.csv 並透過 Gemini 結構化輸出取得可換算幣別清單。
+2. 使用 st.selectbox 選擇持有幣別與兌換幣別。
+3. 使用 st.number_input 輸入換算金額。
+4. 點擊「計算」按鈕後，呼叫 Gemini 3.7 Flash 執行匯率試算，並以 st.success 與 st.markdown 呈現計算公式與排版結果。
 ```
 </details>
 
