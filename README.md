@@ -1,229 +1,189 @@
-# Gemini API 應用
+# Gemini API 應用實戰指南
 
-本專案著重於 **Gemini API** 的介紹與實作，示範如何將 Google 大語言模型整合到專案中。
+本專案全面介紹與實作 **Google Gemini API**，示範如何將 Google 最新的 Gemini 3 世代大語言模型與強大工具整合到各類 Python 應用程式與 AI Agent 工作流程中。
 
 ---
 
-> **更新日期：2026-07** — 本專案已對齊 Gemini 3 世代模型與最新 [`google-genai`](https://github.com/googleapis/python-genai) SDK。
-> 舊的 `google-generativeai`（`genai.configure` / `GenerativeModel`）SDK 已淘汰，請改用本文示範的 `from google import genai` 寫法。
+> **專案版本更新（2026 最新規範）**：
+> - 全面採用 Google 官方推薦的 **Interactions API** (`client.interactions.create`) 與最新 [`google-genai`](https://github.com/googleapis/python-genai) SDK。
+> - 支援 **Gemini 3** 最新模型（`gemini-3.7-flash`、`gemini-3.5-flash-lite`、`gemini-3.1-pro-preview` 等）。
+> - 每個單元均提供可直接執行的 Python 腳本、Jupyter Notebook，並附帶 **AI 賦能提示詞 (Prompts)**，方便一鍵利用 AI 生成 Gradio 或 Streamlit 視覺化 Web 介面。
 
-## 環境需求
+---
+
+## 🛠️ 環境需求與安裝
 
 - **Python**：3.9+
-- **套件**：見 [requirements.txt](./requirements.txt)  
-  核心依賴：`google-genai`、`python-dotenv`、`jupyterlab-lsp`、`basedpyright`
+- **套件管理**：推薦使用 `uv` 或 `pip`
+- **核心套件**：`google-genai`、`pydantic`、`python-dotenv`、`gradio`、`streamlit`
 
-安裝：
-
+使用 `uv` 快速安裝：
 ```bash
-uv add google-genai python-dotenv jupyterlab-lsp basedpyright
+uv add google-genai pydantic python-dotenv gradio requests beautifulsoup4
+```
+
+設定 API Key（儲存於專案根目錄 `.env` 檔案中）：
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 ---
 
-## 目前可用的模型（2026-07）
+## 🤖 目前推薦模型清單
 
-| 用途 | 建議模型 | 說明 |
-|------|----------|------|
-| **通用主力（建議使用）** | `gemini-3.7-flash` | 1M tokens，平衡效能、多模態、推理與 Agentic 任務。 |
-| 高階推理 | `gemini-3.1-pro-preview` | 1M tokens，最強推理與長脈絡，適合複雜問題與編程。 |
-| 低成本高吞吐 | `gemini-3.5-flash-lite` | 最省、最快，適合大量輕量任務。 |
-| 向量嵌入 | `gemini-embedding-001` | 支援 `task_type`、可調 `output_dimensionality`。 |
-| 多模態嵌入 | `gemini-embedding-2` | 最新，支援文字/圖片/影片/音訊，但不支援 `task_type`。 |
+| 用途 | 推薦模型 | 特性與說明 |
+|---|---|---|
+| **通用主力（預設首選）** | `gemini-3.7-flash` | 1M tokens 上下文，平衡速度、多模態、思考推理與 Agentic 任務。 |
+| **低成本 / 高吞吐** | `gemini-3.5-flash-lite` | 最經濟、極速回應，適合高頻次輕量任務與資料萃取。 |
+| **深度推理 / 複雜編程** | `gemini-3.1-pro-preview` | 1M tokens 上下文，頂級程式碼生成、數學邏輯與深度研究。 |
+| **文字向量嵌入** | `gemini-embedding-001` | 支援 `task_type` 與可自訂維度 (`output_dimensionality`)。 |
+| **多模態向量嵌入** | `gemini-embedding-2` | 支援文字、圖片、影片與音訊的多模態統一嵌入。 |
 
-> ⚠️ **已關閉/淘汰**：`gemini-2.0-flash-exp`、`gemini-2.0-flash`（2026-06-01 關閉）、`gemini-1.5-*` 全系列、`text-embedding-004`。本專案已全數更新，若你在舊筆記中看到這些名稱請一併替換。
+> ⚠️ **已淘汰模型**：舊版 `gemini-2.0-*`、`gemini-1.5-*` 全系列及舊版 `google-generativeai` 套件已全面停用，請使用上述最新模型。
 
 ---
 
-## 快速開始 (Interactions API)
+## ⚡ 快速開始 (Interactions API)
 
-Interactions API 是 Google 官方推薦的統一互動介面，使用 `client.interactions.create()` 即可涵蓋文字生成、多模態輸入、串流輸出與伺服器端狀態維護的多輪對話。
+Interactions API 是 Google 官方推薦的統一互動介面，使用 `client.interactions.create()` 即可涵蓋文字生成、多模態輸入、串流輸出、工具調用與伺服器端狀態維護的多輪對話。
 
 ### 基本文字生成
-
-將 API 金鑰設為環境變數 `GEMINI_API_KEY`，SDK 會自動讀取。或於初始化時傳入：
 
 ```python
 from google import genai
 import os
-from IPython.display import display, Markdown
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 interaction = client.interactions.create(
     model="gemini-3.7-flash",
-    input="AI 是如何工作的？（請使用繁體中文回答）"
+    input="請用繁體中文以三點簡要說明什麼是 AI Agent？"
 )
-display(Markdown(interaction.output_text))
+
+print(interaction.output_text)
 ```
 
 <details>
 <summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入 Gradio / Streamlit 介面</b></summary>
 
-> 您可以將以下 Prompt 複製給 AI 助手，快速將本範例轉化為 Web 應用程式：
-
 **Gradio 介面開發 Prompt：**
 ```text
 請幫我將上述的 Gemini 基本文字生成 Python 程式碼改寫為 Gradio 網頁應用程式：
-1. 使用 `gr.Blocks` 建立介面，包含一個文字輸入框（Multiline Textbox）與「送出」按鈕。
-2. 使用 `gr.Markdown` 呈現模型的回覆。
-3. 整合 `client.interactions.create(model="gemini-3.7-flash", input=...)` 邏輯。
+1. 使用 gr.Blocks 建立介面，包含一個多行文字輸入框與「送出」按鈕。
+2. 使用 gr.Markdown 呈現模型的回覆。
+3. 整合 client.interactions.create(model="gemini-3.7-flash", input=...) 邏輯。
 4. 加入問題範例選單（gr.Examples）供使用者點選測試。
-5. 啟動時請啟用 share=True。
 ```
 
 **Streamlit 介面開發 Prompt：**
 ```text
 請幫我將上述的 Gemini 基本文字生成 Python 程式碼改寫為 Streamlit 網頁應用程式：
-1. 使用 `st.set_page_config` 與 `st.title` 建立美觀標題與說明。
-2. 在側邊欄（st.sidebar）加入 API Key 設定輸入框（若環境變數未設定時可手動輸入）。
-3. 使用 `st.text_area` 接收使用者問題，並使用 `st.button` 觸發生成。
-4. 使用 `st.spinner("Gemini 正在思考與生成中...")` 提示載入狀態。
-5. 將生成結果使用 `st.markdown` 格式化呈現。
+1. 使用 st.set_page_config 與 st.title 建立美觀標題。
+2. 側邊欄提供 API Key 設定與模型選擇。
+3. 主畫面提供 st.text_area 接收使用者問題，按下按鈕後以 st.spinner 提示，並以 st.markdown 呈現排版結果。
 ```
 </details>
 
-### 關於「思考」功能（Thinking with Gemini）
+---
 
-Gemini 3 世代模型（如 `gemini-3.7-flash`）預設會啟用思考模式。您可以透過 `generation_config` 中的 **`thinking_level`**（`minimal` / `low` / `medium` / `high`）控制思考深度：
+### 思考模式設定 (Thinking with Gemini)
+
+Gemini 3 世代模型具備內建思考推理能力，可透過 `generation_config` 中的 `thinking_level`（`minimal` / `low` / `medium` / `high`）精準調節思考深度：
 
 ```python
 from google import genai
 
 client = genai.Client()
+
 interaction = client.interactions.create(
     model="gemini-3.7-flash",
-    input="用幾句話說明 AI 如何運作",
+    input="請分析量子運算對現行 RSA 加密演算法帶來的具體衝擊。",
     generation_config={
-        "thinking_level": "low",
-        "temperature": 1.0
+        "thinking_level": "medium",
+        "temperature": 1.0  # 官方建議思考模式下維持預設 1.0
     }
 )
+
 print(interaction.output_text)
 ```
-
-> 注意：官方建議 `temperature` 維持預設 `1.0`（調動可能導致重複輸出或效能下降）。
 
 <details>
 <summary>🤖 <b>AI 賦能提示詞 (Prompts)：加入思考深度控制介面</b></summary>
 
-**Gradio 介面開發 Prompt：**
-```text
-請幫我將上述包含 thinking_level 的 Gemini 程式碼改寫為 Gradio 應用程式：
-1. 介面包含問題輸入框、`gr.Radio` 或 `gr.Dropdown` 讓使用者選擇思考深度（minimal, low, medium, high）。
-2. 使用者點選送出後，將選取的 thinking_level 傳入 generation_config。
-3. 使用 `gr.Markdown` 顯示生成結果。
-```
-
 **Streamlit 介面開發 Prompt：**
 ```text
-請幫我將上述思考設定程式碼改寫為 Streamlit 應用程式：
-1. 在側邊欄使用 `st.select_slider` 或 `st.radio` 讓使用者調整「思考深度（Thinking Level）」（選項：minimal, low, medium, high）。
-2. 主畫面提供問題輸入區與送出按鈕。
-3. 呼叫 Gemini 3.7 Flash 並套用選取的 thinking_level，以 `st.spinner` 動態提示，最後以 `st.markdown` 渲染回覆。
+請幫我將上述包含 thinking_level 的程式改寫為 Streamlit 應用程式：
+1. 在側邊欄使用 st.select_slider 讓使用者自由調節思考深度（minimal, low, medium, high）。
+2. 主畫面輸入問題後，呼叫 Gemini 3.7 Flash 進行深度推理回答。
 ```
 </details>
 
 ---
 
-## 官方資源
+## 📚 專案核心章節導覽
 
-- [Google AI Studio](https://aistudio.google.com/prompts/new_chat)（測試與實驗）
-- [Gemini API 模型列表](https://ai.google.dev/gemini-api/docs/models)
-- [Gemini 3 開發者指南](https://ai.google.dev/gemini-api/docs/gemini-3)
-- [Python SDK（google-genai）](https://github.com/googleapis/python-genai)
-
----
-
-## 專案章節導覽
-
-| 章節 | 說明 | 路徑 |
-|------|------|------|
-| **何謂 AI Agent** | AI 代理與工作流概念 | [何謂AIAgent](./何謂AIAgent) |
-| **1. 文字生成** | 單輪/串流/多輪對話、多模態 | [text_generation](./text_generation) |
-| **2. 文件理解** | PDF 等文件讀取與分析 | [document_understanding](./document_understanding) |
-| **3. 結構化輸出** | JSON 等結構化資料產生 | [structure_output](./structure_output) |
-| **4. 程式碼執行** | 程式碼產生與執行 | [code_execution](./code_execution) |
-| **5. 函式呼叫** | Function calling 範例與應用 | [function_calling](./function_calling) |
-| **6. Embeddings** | 語意搜尋與向量檢索 | [embeddings/document_search](./embeddings/document_search) |
-| **7. 開源模型** | Hugging Face 等非 Gemini 模型範例 | [開源模型](./開源模型) |
+| 章節 | 核心主題 | 重點內容與範例 | 目錄路徑 |
+|---|---|---|---|
+| **0. 何謂 AI Agent** | 代理觀念與架構 | Prompt chaining、Routing、Parallelization、Evaluator-optimizer 等設計模式 | [何謂AIAgent](./何謂AIAgent) |
+| **1. 文字生成** | Text Generation | 單輪生成、即時串流 (`step.delta`)、狀態化多輪對話、多模態圖文分析 | [text_generation](./text_generation) |
+| **2. 文件理解** | Document Understanding | 本機/遠端 PDF 文件解析、長篇文件摘要、表格萃取與快取機制 | [document_understanding](./document_understanding) |
+| **3. 結構化輸出** | Structured Outputs | JSON Schema 強制約束、Pydantic / Zod 型別驗證、多態 (`Union`)、遞迴樹狀結構與串流 JSON | [structure_output](./structure_output) |
+| **4. 程式碼執行** | Code Execution | 內建 Python 執行沙盒、數據運算、演算法驗證與圖表繪製 | [code_execution](./code_execution) |
+| **5. 函式呼叫** | Function Calling | 4 步驟標準流程、平行呼叫、組合式鏈結、模式控制 (`AUTO`/`ANY`)、聯網工具混合與多模態回傳 | [function_calling](./function_calling) |
+| **6. 向量檢索** | Embeddings & Search | `gemini-embedding-001`、多語 E5、ChromaDB 向量資料庫與語意搜尋 | [embeddings/document_search](./embeddings/document_search) |
+| **7. 開源模型** | Open Source Models | Hugging Face Serverless Inference API 整合實作 | [開源模型](./開源模型) |
 
 ---
 
-## 1. 文字生成 (text_generation)
+## 📂 各章節核心實作檔案速查
 
-- 統一採用官方推薦的 **Interactions API** (`client.interactions.create`)
-- 單輪文字生成、串流回應（`stream=True` / `step.delta`）
-- 伺服器端狀態化多輪對話（`previous_interaction_id`）與無狀態對話（`store=False`）
-- 多模態圖文輸入、思考模式（`thinking_level`）與系統指示（`system_instruction`）
-- 範例：Zero-shot、總結、翻譯、旅遊規劃、Gradio 介面整合等
+### [1. 文字生成 (text_generation)](./text_generation)
+- [`zero_shot.py`](./text_generation/zero_shot.py)：零樣本文字生成
+- [`text_streaming.py`](./text_generation/text_streaming.py)：即時 Token 串流輸出
+- [`chat.py`](./text_generation/chat.py)：伺服器端狀態化多輪對話
+- [`image_text.py`](./text_generation/image_text.py)：多模態圖文綜合理解
+- [`text_to_summarization.py`](./text_generation/text_to_summarization.py)：長文本重點摘要
 
-詳見 [text_generation/README.md](./text_generation/README.md)。
+### [2. 文件理解 (document_understanding)](./document_understanding)
+- [`demo1.ipynb`](./document_understanding/demo1.ipynb)：本機與遠端 PDF 文件分析與問答
+- [`demo2.ipynb`](./document_understanding/demo2.ipynb)：多頁大檔案處理與長上下文摘要
 
----
+### [3. 結構化輸出 (structure_output)](./structure_output)
+- [`recipe_extractor.py`](./structure_output/recipe_extractor.py)：Pydantic 基礎資料萃取（Interactions API）
+- [`advanced_schemas.py`](./structure_output/advanced_schemas.py)：條件多態結構 (`anyOf`/`Union`)、遞迴組織架構圖與串流 JSON
+- [`currency_exchange_gradio.py`](./structure_output/currency_exchange_gradio.py)：牌告匯率結構化萃取與 Gradio 試算介面
+- [`lesson1.ipynb`](./structure_output/lesson1.ipynb)：結構化輸出完整互動式教學筆記本
 
-## 2. 文件理解 (document_understanding)
+### [4. 程式碼執行 (code_execution)](./code_execution)
+- [`demo2.py`](./code_execution/demo2.py)：啟用 Code Execution 進行即時數學運算與驗證
+- [`lesson1.ipynb`](./code_execution/lesson1.ipynb)：程式碼生成與沙盒執行基礎教學
 
-- PDF（遠端/本機、大檔案）
-- 摘要、問答、結構化擷取
+### [5. 函式呼叫 (function_calling)](./function_calling)
+- [`meeting_scheduler.py`](./function_calling/meeting_scheduler.py)：會議預約外部動作執行（標準 4 步驟流程）
+- [`weather_assistant.py`](./function_calling/weather_assistant.py)：外部即時資料查詢與解析
+- [`parallel_function_calling.py`](./function_calling/parallel_function_calling.py)：多設備平行呼叫與批量結果回傳
+- [`multi_tool_search_and_function.py`](./function_calling/multi_tool_search_and_function.py)：Google Search 聯網與自訂工具混合使用
+- [`basic_function_calling.ipynb`](./function_calling/basic_function_calling.ipynb)：基礎函式呼叫教學
+- [`multi_function_calling.ipynb`](./function_calling/multi_function_calling.ipynb)：多函式自動路由與執行
+- [`chat_function_history.ipynb`](./function_calling/chat_function_history.ipynb)：對話歷史與函式呼叫整合
 
-詳見 [document_understanding/README.md](./document_understanding/README.md)。
-
----
-
-## 3. 結構化輸出 (structure_output)
-
-- 指定 JSON schema 產出
-- 列舉與格式控制
-
-詳見 [structure_output/README.md](./structure_output/README.md)。
-
----
-
-## 4. 程式碼執行 (code_execution)
-
-- 產生並執行 Python 程式碼
-- Chat 內使用 code execution、匯率換算等範例
-
-詳見 [code_execution/README.md](./code_execution/README.md)。
-
----
-
-## 5. 函式呼叫 (function_calling)
-
-- [最簡單範例](./function_calling/simple_sample.ipynb)
-- [範例 1：匯率（自動呼叫）](./function_calling/example1)
-- [範例 2：匯率（手動呼叫）](./function_calling/example2)
-- [Gradio 範例](./function_calling/gradio_example1)
-- [多函式](./function_calling/multiFunction.ipynb)
-- [ChatSession.history](./function_calling/history.ipynb)
-- [手動管理函式呼叫](./function_calling/manual_function_calling.ipynb)
-- [鏈結呼叫](./function_calling/function_calling_chain.ipynb)
-- [平行呼叫](./function_calling/parallel_function_call.ipynb)
-- [從結構化資料擷取](./function_calling/extract_structured_data.ipynb)
-
-詳見 [function_calling/README.md](./function_calling/README.md)。
+### [6. 向量檢索 (embeddings)](./embeddings/document_search)
+- [`document-search-e5.py`](./embeddings/document_search/document-search-e5.py)：多語向量模型檢索
+- [`document_search.ipynb`](./embeddings/document_search/document_search.ipynb)：Gemini 向量嵌入與語意相似度計算
 
 ---
 
-## 6. Embeddings（語意搜尋）
+## 🔗 官方參考文件
 
-- Gemini `gemini-embedding-001`、多語 E5 等
-- 文件搜尋、預訓練與查詢、ChromaDB 整合
-
-詳見 [embeddings/document_search/README.md](./embeddings/document_search/README.md)。
-
----
-
-## 7. 開源模型
-
-- Hugging Face Inference API 等 serverless 模型範例（如 Mistral-Nemo）
-- 總結等應用
-
-詳見 [開源模型/README.md](./開源模型/README.md)。
+- [Google AI Studio 實驗室](https://aistudio.google.com/)
+- [Gemini API 官方開發者文件](https://ai.google.dev/gemini-api/docs)
+- [Interactions API 指南](https://ai.google.dev/gemini-api/docs/interactions)
+- [Structured Outputs 指南](https://aistudio.google.com/docs/structured-output)
+- [Function Calling 指南](https://aistudio.google.com/docs/function-calling)
+- [Google GenAI Python SDK (GitHub)](https://github.com/googleapis/python-genai)
 
 ---
 
-## 專案結構總覽
+## 📖 專案結構細節
 
-目錄樹與說明見 [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)。
+詳細目錄樹結構與各檔案詳細介紹請參閱 [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)。
