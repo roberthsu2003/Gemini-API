@@ -138,14 +138,10 @@ print(interaction.output_text)
 ### 🔰 第一階段：基礎互動與多模態體驗（建立成就感）
 
 #### [1. 文字生成 (text_generation)](./text_generation)
-使用 Interactions API 進行單輪生成、Thinking 思考層級控制、系統指示、多模態圖文理解與狀態化多輪串流對話。
-- [`zero_shot.py`](./text_generation/zero_shot.py)：零樣本文字生成與 Gradio 介面
-- [`text_streaming.py`](./text_generation/text_streaming.py)：即時 Token 串流輸出（SSE 事件）
-- [`chat.py`](./text_generation/chat.py)：伺服器端狀態化多輪對話 (`previous_interaction_id`)
-- [`image_text.py`](./text_generation/image_text.py)：多模態圖文綜合理解與問答
-- [`text_to_summarization.py`](./text_generation/text_to_summarization.py)：長文本重點摘要與語氣風格控制
-- [`text_generation_quickstart.ipynb`](./text_generation/text_generation_quickstart.ipynb)：Interactions API 完整語法互動筆記本
-- [`trip_planner_system_instruction.ipynb`](./text_generation/trip_planner_system_instruction.ipynb)：旅遊規劃與 System Instruction 實戰
+劃分「Gemini 核心功能指南（純 Python 教學）」與「實務應用整合實戰（Telegram / Gradio / Streamlit / FastAPI）」雙層架構：
+- **核心教學**：[`01_basic_text.py`](./text_generation/01_basic_text.py)（文字生成）、[`02_thinking_mode.py`](./text_generation/02_thinking_mode.py)（思考深度）、[`03_system_and_params.py`](./text_generation/03_system_and_params.py)（系統指示詞與參數）、[`04_multimodal_image.py`](./text_generation/04_multimodal_image.py)（多模態圖文）、[`05_streaming.py`](./text_generation/05_streaming.py)（即時串流）、[`06_stateful_chat.py`](./text_generation/06_stateful_chat.py)（狀態化對話）、[`07_stateless_chat.py`](./text_generation/07_stateless_chat.py)（無狀態對話）
+- **實務整合**：[`app_telegram_bot.py`](./text_generation/app_telegram_bot.py)（Telegram Bot）、[`app_gradio.py`](./text_generation/app_gradio.py)（Gradio Web UI）、[`app_streamlit.py`](./text_generation/app_streamlit.py)（Streamlit 儀表板）、[`app_fastapi.py`](./text_generation/app_fastapi.py)（FastAPI 後端與 SSE 串流）
+- **互動筆記**：[`text_generation_quickstart.ipynb`](./text_generation/text_generation_quickstart.ipynb)、[`trip_planner_system_instruction.ipynb`](./text_generation/trip_planner_system_instruction.ipynb)
 
 #### [2. 圖像生成 (image_generation)](./image_generation)
 使用 Google Imagen 3 (`imagen-3.0-generate-002`) 與 `gemini-2.5-flash-image` 進行 Text-to-Image 生成，支援比例自訂與 Prompt 智慧擴寫產圖工作流。

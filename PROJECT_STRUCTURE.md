@@ -42,15 +42,23 @@ Gemini-API/
 - `gemini_bot.py`：串接 Gemini 3.7 Flash Interactions API 的 Telegram AI 智慧對話助理
 
 ### 1. text_generation (文字生成)
-- `README.md`：文字生成完整指南（涵蓋 Interactions API、Thinking 思考控制、System Instructions、多模態、即時串流、多輪狀態對話與最佳實踐）
-- `zero_shot.py`：Zero-shot 文字生成與 Gradio 互動介面
-- `text_streaming.py`：即時打字機串流生成（SSE 事件監聽）
-- `chat.py`：伺服器端狀態管理（`previous_interaction_id`）多輪串流對話
-- `image_text.py`：多模態圖文問答分析介面
-- `text_to_summarization.py`：文章摘要與語氣風格控制
-- `text_generation_quickstart.ipynb`：Interactions API 快速入門互動筆記本
-- `trip_planner_system_instruction.ipynb`：旅遊規劃與系統指示詞筆記本
-- `organ.jpg`、`bear.jpg`、`plant1.jpg` ~ `plant3.webp`：圖文問答範例圖片
+- `README.md`：文字生成完整指南（劃分「Gemini 核心功能指南」與「實務應用整合實戰」兩大篇章）
+- **核心功能教學（純 Python）**：
+  - `01_basic_text.py`：基礎文字生成 (Zero-shot)
+  - `02_thinking_mode.py`：思考模式與推理深度控制 (`thinking_level`)
+  - `03_system_and_params.py`：系統指示詞與生成參數配置 (`temperature`, `max_output_tokens`)
+  - `04_multimodal_image.py`：多模態圖文輸入與視覺分析 (PIL Image)
+  - `05_streaming.py`：終端機即時打字機串流輸出 (`stream=True`)
+  - `06_stateful_chat.py`：伺服器端狀態化多輪對話 (`previous_interaction_id`)
+  - `07_stateless_chat.py`：客戶端無狀態多輪對話
+  - `text_generation_quickstart.ipynb`：Interactions API 快速入門互動筆記本
+  - `trip_planner_system_instruction.ipynb`：旅遊規劃與系統指示詞筆記本
+  - `bear.jpg`、`organ.jpg`、`plant1.jpg` ~ `plant3.webp`：圖文問答範例圖片
+- **實務應用整合（跨通道框架）**：
+  - `app_telegram_bot.py`：Telegram 機器人（Polling 模式，支援文字與圖片問答）
+  - `app_gradio.py`：Gradio 互動式 Web 介面（思考深度切換與串流多輪 Chat）
+  - `app_streamlit.py`：Streamlit 互動式 Web 儀表板（側邊欄參數調節與即時對話）
+  - `app_fastapi.py`：FastAPI 後端 API（RESTful `/generate` 與 SSE `/chat/stream` 串流）
 
 ### 2. image_generation (圖像生成)
 - `README.md`：Imagen 3 與多模態圖像生成教學（涵蓋 Text-to-Image、長寬比控制、gemini-2.5-flash-image 與 Prompt 擴寫產圖工作流）
