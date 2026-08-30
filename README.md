@@ -9,60 +9,14 @@
 > - 支援 **Gemini 3** 最新模型（`gemini-3.7-flash`、`gemini-3.5-flash-lite`、`gemini-3.1-pro-preview` 等）。
 > - 每個單元均提供可直接執行的 Python 腳本、Jupyter Notebook，並附帶 **AI 賦能提示詞 (Prompts)**，方便一鍵利用 AI 生成 Gradio 或 Streamlit 視覺化 Web 介面。
 
-## 📱 Telegram 連線方式與機器人開發
+## 📱 Telegram Bot 連線與應用
 
-使用 Python 開發 Telegram Bot 非常簡單且好寫，開發體驗比多數通訊軟體（如 LINE 或 Messenger）更輕量，原因在於：
-- **免伺服器與 Webhook 設定**：開發階段使用內建的 **Polling（輪詢）** 機制即可直接在本地端（本機電腦）運行，不需要公開 IP 或 ngrok 穿牆。
-- **申請流程極快**：在 Telegram 搜尋 `@BotFather`，發送 `/newbot` 指令，30 秒內即可取得 API Token。
-- **生態系成熟**：主流套件如 `python-telegram-bot`（支援非同步 `async`/`await`）與 `telebot`（`pyTelegramBotAPI`，語法極度精簡）封裝非常完善。
+Telegram 是串接大語言模型與 AI Agent 最輕量、好寫且開發體驗極佳的通訊管道（免 Webhook/伺服器、支援本機 Polling 輪詢快速測試、30 秒極速申請 Token）。
 
-### 🚀 極簡範例（使用 `python-telegram-bot` v20+）
-
-#### 1. 安裝套件
-```bash
-pip install python-telegram-bot
-```
-或使用 `uv`：
-```bash
-uv add python-telegram-bot
-```
-
-#### 2. 接收 `/start` 指令並自動回話
-```python
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
-
-TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
-
-# 處理 /start 指令
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("你好！我是你的 Telegram 機器人。")
-
-# 回應一般文字訊息（Echo）
-async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_text = update.message.text
-    await update.message.reply_text(f"你說了：{user_text}")
-
-def main():
-    app = ApplicationBuilder().token(TOKEN).build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
-
-    print("Bot 運行中...")
-    app.run_polling()
-
-if __name__ == "__main__":
-    main()
-```
-
-### 💡 常見開發優勢與考量
-
-- **優勢**：
-  - 支援發送富文本（Markdown / HTML）、圖片、檔案、自訂鍵盤（Reply Keyboard）、行內按鈕（Inline Keyboard）。
-  - 官方 API 完全免費且限制寬鬆，個人推播通知、自動化監控與串接 LLM（如 Gemini API）均非常合適。
-- **注意事項**：
-  - 若要上線至生產環境處理高併發請求，可將 Polling 切換為 Webhook 模式，並搭配 FastAPI / Flask 部署。
+👉 **完整教學與範例程式碼請參閱專屬章節**：[**【📱 Telegram Bot 連線方式與機器人開發】(./telegram_bot)**](./telegram_bot)
+- [`basic_bot.py`](./telegram_bot/basic_bot.py)：Telegram 基礎連線與 Echo 文字回覆範例
+- [`gemini_bot.py`](./telegram_bot/gemini_bot.py)：串接 Gemini 3.7 Flash Interactions API 的智慧對話助理
+- [`README.md`](./telegram_bot/README.md)：Token 申請、Polling/Webhook 部署考量與完整開發手冊
 
 ---
 

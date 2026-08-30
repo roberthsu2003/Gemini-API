@@ -18,6 +18,7 @@
 
 ```
 Gemini-API/
+├── telegram_bot/              # 0. Telegram 機器人連線與 AI 助理串接
 ├── text_generation/          # 1. 文字生成（單輪、串流、Chat、Thinking）
 ├── image_generation/         # 2. 圖像生成（Imagen 3、比例控制、多模態）
 ├── document_understanding/   # 3. 文件理解（PDF、Files API、快取）
@@ -34,6 +35,11 @@ Gemini-API/
 ---
 
 ## 各章節重點檔案
+
+### 0. telegram_bot (Telegram 機器人)
+- `README.md`：Telegram Bot 連線完整指南（涵蓋 Token 申請、Polling 輪詢機制、Webhook 生產部署考量、Gemini AI 助理串接）
+- `basic_bot.py`：Telegram 基礎連線與 Echo 回覆範例（`python-telegram-bot` v20+ 非同步架構）
+- `gemini_bot.py`：串接 Gemini 3.7 Flash Interactions API 的 Telegram AI 智慧對話助理
 
 ### 1. text_generation (文字生成)
 - `README.md`：文字生成完整指南（涵蓋 Interactions API、Thinking 思考控制、System Instructions、多模態、即時串流、多輪狀態對話與最佳實踐）
