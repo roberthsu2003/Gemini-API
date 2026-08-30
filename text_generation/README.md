@@ -1,10 +1,6 @@
 # ✍️ Gemini 文字生成 (Interactions API 完整指南)
 
-本章節介紹如何使用 Google Gemini 官方推薦的 **Interactions API** 進行文字生成、思考控制、系統設定、多模態理解、串流回應與狀態化多輪對話。
-
-本章節架構遵循**「先學核心，再做應用」**的設計理念：
-- 📌 **第一部分：Gemini 核心功能指南（基礎教學）**：純 Python 語法，專注理解 API 核心調用、參數配置與運作機制。
-- 🚀 **第二部分：實務應用整合實戰（進階延伸）**：學會核心後，將其整合至 **Telegram Bot**、**Gradio**、**Streamlit** 與 **FastAPI** 等現代應用通道。
+本章節專注介紹如何使用 Google Gemini 官方最新推薦的 **Interactions API** 進行文字生成、思考控制、系統設定、多模態理解、即時串流回應與狀態化多輪對話。
 
 > 📖 **官方 Interactions API 簡介**：
 > Interactions API 是 Gemini 3 世代推薦的統一互動介面。使用 `client.interactions.create()` 即可涵蓋單輪文字生成、多輪狀態化對話（伺服器端透過 `previous_interaction_id` 自動管理對話歷史）、串流傳輸（Streaming）與多模態圖文輸入。
@@ -14,7 +10,6 @@
 
 ## 📑 目錄導覽
 
-### 📌 第一部分：Gemini 核心功能指南（教學專用）
 1. [快速開始：基礎文字生成 (01_basic_text.py)](#1-快速開始基礎文字生成-01_basic_textpy)
 2. [思考模式深度控制 (02_thinking_mode.py)](#2-思考模式深度控制-02_thinking_modepy)
 3. [系統指示詞與生成參數 (03_system_and_params.py)](#3-系統指示詞與生成參數-03_system_and_paramspy)
@@ -23,18 +18,6 @@
 6. [伺服器端狀態化多輪對話 (06_stateful_chat.py)](#6-伺服器端狀態化多輪對話-06_stateful_chatpy)
 7. [客戶端無狀態多輪對話 (07_stateless_chat.py)](#7-客戶端無狀態多輪對話-07_stateless_chatpy)
 8. [課堂互動筆記本 (Jupyter Notebooks)](#8-課堂互動筆記本-jupyter-notebooks)
-
-### 🚀 第二部分：實務應用整合實戰（進階延伸）
-1. [📱 Telegram Bot 即時對話機器人 (app_telegram_bot.py)](#-1-telegram-bot-即時對話機器人-app_telegram_botpy)
-2. [🎨 Gradio 互動式 Web 介面 (app_gradio.py)](#-2-gradio-互動式-web-介面-app_gradiopy)
-3. [📊 Streamlit 儀表板與 Chat 介面 (app_streamlit.py)](#-3-streamlit-儀表板與-chat-介面-app_streamlitpy)
-4. [⚡ FastAPI 後端服務與 SSE 串流 API (app_fastapi.py)](#-4-fastapi-後端服務與-sse-串流-api-app_fastapipy)
-
----
-
-# 📌 第一部分：Gemini 核心功能指南
-
-本部分教學程式碼均為**純 Python 腳本**，無任何 Web/UI 負擔，直接在終端機即可執行與觀察。
 
 ---
 
@@ -232,81 +215,3 @@ print("第二輪回覆：", turn_2.output_text)
 - [`text_generation_quickstart.ipynb`](./text_generation_quickstart.ipynb)：Interactions API 入門操作筆記本
 - [`trip_planner_system_instruction.ipynb`](./trip_planner_system_instruction.ipynb)：旅遊規劃與 System Instruction 實戰
 
----
-
-# 🚀 第二部分：實務應用整合實戰
-
-學會上述核心語法後，以下示範如何將 Gemini 整合至四種主流應用架構：
-
----
-
-## 📱 1. Telegram Bot 即時對話機器人 (`app_telegram_bot.py`)
-
-Telegram Bot 開發極度輕量，本地測試只需使用 **Polling 輪詢機制** 即可直接運行（免伺服器、免公開 IP 或 ngrok 穿牆）。
-
-### 支援功能
-- 歡迎指令 `/start`
-- 文字問答（自動呼叫 Gemini 3.7 Flash）
-- 圖片上傳多模態分析（支援接收照片並進行視覺理解）
-
-程式檔案：[`app_telegram_bot.py`](./app_telegram_bot.py)
-
-### 執行方式
-```bash
-# 1. 確認已在 .env 設定 TELEGRAM_BOT_TOKEN 與 GEMINI_API_KEY
-python text_generation/app_telegram_bot.py
-```
-
----
-
-## 🎨 2. Gradio 互動式 Web 介面 (`app_gradio.py`)
-
-Gradio 適合快速構建 AI 原型與教學展示，本範例整合了**多輪對話**、**思考深度滑桿切換**與**即時打字機串流**。
-
-程式檔案：[`app_gradio.py`](./app_gradio.py)
-
-### 執行方式
-```bash
-python text_generation/app_gradio.py
-```
-啟動後在瀏覽器開啟 `http://127.0.0.1:7860` 即可體驗。
-
----
-
-## 📊 3. Streamlit 儀表板與 Chat 介面 (`app_streamlit.py`)
-
-Streamlit 適合構建正式的企業儀表板與對話應用，具備側邊欄參數調節、多輪上下文管理與一鍵清除歷史。
-
-程式檔案：[`app_streamlit.py`](./app_streamlit.py)
-
-### 執行方式
-```bash
-streamlit run text_generation/app_streamlit.py
-```
-啟動後在瀏覽器開啟 `http://localhost:8501`。
-
----
-
-## ⚡ 4. FastAPI 後端服務與 SSE 串流 API (`app_fastapi.py`)
-
-FastAPI 適合將 Gemini 封裝為高併發的生產級微服務，支援標準 JSON 回應與 SSE (Server-Sent Events) 打字機串流。
-
-### 提供的 API 端點
-- `POST /api/generate`：標準單輪 JSON 生成
-- `POST /api/chat/stream`：SSE 即時打字機串流端點（支援 `previous_interaction_id`）
-- `GET /docs`：自動生成的 Swagger 互動式 API 文件
-
-程式檔案：[`app_fastapi.py`](./app_fastapi.py)
-
-### 執行方式
-```bash
-uvicorn text_generation.app_fastapi:app --reload --port 8000
-```
-
-### 測試 API (透過 cURL)
-```bash
-# 測試標準生成端點
-curl -X POST "http://127.0.0.1:8000/api/generate" \
-     -H "Content-Type: application/json" \
-     -d '{"prompt": "請用繁體中文以兩句話簡介 FastAPI。"}'
-```
