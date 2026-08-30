@@ -61,87 +61,115 @@ Gemini-API/
   - `app_fastapi.py`：FastAPI 後端 API（RESTful `/generate` 與 SSE `/chat/stream` 串流）
 
 ### 2. image_generation (圖像生成)
-- `README.md`：Imagen 3 與多模態圖像生成教學（涵蓋 Text-to-Image、長寬比控制、gemini-2.5-flash-image 與 Prompt 擴寫產圖工作流）
-- `text_to_image_imagen.py`：Imagen 3 基礎文字生成高品質圖片
-- `aspect_ratio_control.py`：自訂長寬比例（16:9、9:16、1:1）生成範例
-- `gemini_flash_image.py`：Gemini 2.5 Flash Image 多模態圖像生成
-- `prompt_enhancer_and_generator.py`：Gemini 擴寫提示詞 ➔ 自動調用 Imagen 生成圖片的一條龍工作流
+- `README.md`：Imagen 3 與多模態圖像生成教學
+- **核心教學**：
+  - `01_text_to_image.py`：Imagen 3 基礎文字生成高品質圖片
+  - `02_aspect_ratio.py`：自訂長寬比例（16:9、9:16、1:1）生成範例
+  - `03_gemini_flash_image.py`：Gemini 2.5 Flash Image 多模態圖像生成
+  - `04_prompt_enhancer.py`：Gemini 擴寫提示詞 ➔ 自動調用 Imagen 生成圖片的一條龍工作流
+- **實務整合**：
+  - `app_telegram_bot.py`：Telegram AI 算圖機器人
+  - `app_gradio.py`：Gradio 藝術生圖工作台
+  - `app_streamlit.py`：Streamlit 生圖工作室
+  - `app_fastapi.py`：FastAPI 圖像生成 API 端點
 
 ### 3. document_understanding (文件理解)
-- `README.md`：PDF 文件理解完整教學（涵蓋 Inline PDF、Files API、URL 遠端載入、多文件比對、結構化萃取與 Context Caching）
-- `inline_pdf_summary.py`：以 Inline 方式傳入 PDF 進行重點摘要
-- `files_api_pdf_chat.py`：Files API 上傳大型 PDF 並進行多輪對話問答
-- `remote_pdf_analysis.py`：從 URL 遠端下載 PDF 論文並由 Gemini 進行深度剖析
-- `multi_pdf_comparison.py`：多份 PDF 跨文件比對與 Markdown 表格輸出
-- `pdf_structured_extraction.py`：結合 Pydantic 從 PDF 中提取結構化規格資訊
-- `pdf_context_caching.py`：超長文件 Context Caching 快取加速與節省 Token 成本
-- `pdf_understanding_tutorial.ipynb`：PDF 文件理解互動筆記本
-- `csv_document_caching.ipynb`：CSV 文件快取與問答筆記本
-- `說明書.pdf`：冷氣機使用說明書範例 PDF（4MB）
-- `aqx_p_488.csv`：空氣品質範例資料檔（134KB）
+- `README.md`：PDF 文件理解完整教學
+- **核心教學**：
+  - `01_inline_pdf_summary.py`：以 Inline 方式傳入 PDF 進行重點摘要
+  - `02_files_api_pdf_chat.py`：Files API 上傳大型 PDF 並進行多輪對話問答
+  - `03_remote_pdf_analysis.py`：從 URL 遠端下載 PDF 論文進行深度研讀
+  - `04_multi_pdf_comparison.py`：多份 PDF 跨文件比對與 Markdown 表格輸出
+  - `05_pdf_structured_extraction.py`：結合 Pydantic 提取結構化規格資訊
+  - `06_pdf_context_caching.py`：Context Caching 長篇文件快取加速與節省成本
+  - `pdf_understanding_tutorial.ipynb`：PDF 文件理解互動筆記本
+  - `csv_document_caching.ipynb`：CSV 文件快取與問答筆記本
+  - `說明書.pdf`：冷氣壁掛式使用說明書（4MB）
+  - `aqx_p_488.csv`：空氣品質監測資料檔
+- **實務整合**：
+  - `app_telegram_bot.py`：Telegram PDF 研讀機器人
+  - `app_gradio.py`：Gradio PDF 研讀與多輪問答介面
+  - `app_streamlit.py`：Streamlit PDF 知識庫問答儀表板
+  - `app_fastapi.py`：FastAPI PDF 分析微服務
 
 ### 4. structure_output (結構化輸出)
-- `README.md`：JSON Schema 結構化輸出教學（含 Interactions API、Pydantic、多態、遞迴、串流與工具整合）
-- `recipe_extractor.py`：Pydantic 基礎食譜與食材萃取範例
-- `advanced_schemas.py`：條件分支 (anyOf/Union 內容審查)、遞迴架構圖與串流輸出範例
-- `currency_exchange_gradio.py`：臺灣銀行牌告匯率提取與 Gradio 換算介面
-- `lesson1.ipynb`：結構化輸出完整互動筆記本教學（Prompt Schema、Pydantic、Enum 分類等）
-- `exchange_rate_extraction.ipynb`：牌告匯率網頁擷取與 Pydantic 結構化轉換
-- `exchange_rate_to_csv.ipynb`：牌告匯率擷取並轉換儲存為 CSV
-- `article_content_extraction.ipynb`：新聞文章內容擷取與整理
-- `web_link_extraction.ipynb`：網頁指定超連結擷取
-- `2025_01_29.csv`：牌告匯率範例資料
-- `organ.jpg`：樂器分類範例圖片
+- `README.md`：JSON Schema 與 Pydantic 結構化輸出教學
+- **核心教學**：
+  - `01_pydantic_basic.py`：Pydantic 基礎食譜與食材萃取範例
+  - `02_advanced_schemas.py`：遞迴樹狀結構 WBS 與 Enum 狀態列舉
+  - `03_currency_exchange.py`：牌告匯率文字精確結構化轉換
+  - `lesson1.ipynb`：結構化輸出完整互動教學筆記本
+  - `exchange_rate_extraction.ipynb`：牌告匯率擷取與結構化轉換
+  - `exchange_rate_to_csv.ipynb`：牌告匯率擷取並儲存為 CSV
+  - `2025_01_29.csv`、`organ.jpg`：測試素材
+- **實務整合**：
+  - `app_telegram_bot.py`：Telegram 結構化食譜小幫手
+  - `app_gradio.py`：Gradio 結構化表格轉換器
+  - `app_streamlit.py`：Streamlit 結構化資料萃取與 CSV 下載工具
+  - `app_fastapi.py`：FastAPI 強型別結構化輸出端點
 
 ### 5. ground_search (聯網搜尋)
-- `README.md`：Google Search 聯網搜尋與事實查核教學（涵蓋即時搜尋、來源引用、Code Execution 混合、Pydantic 結構化）
-- `basic_search.py`：基礎 Google Search 聯網搜尋範例
-- `search_citations.py`：解析搜尋步驟與引用來源網址範例
-- `search_with_code_execution.py`：Google Search 搜尋與 Python 運算混合實戰
-- `search_structured_output.py`：Google Search 搜尋與 Pydantic 結構化提取實戰
+- `README.md`：Google Search 聯網搜尋與事實查核教學
+- **核心教學**：
+  - `01_basic_search.py`：基礎 Google Search 聯網搜尋
+  - `02_search_citations.py`：解析搜尋步驟與引用來源網址
+  - `03_search_with_code_execution.py`：Google Search 搜尋即時數據 + Python 運算混合實戰
+  - `04_search_structured_output.py`：Google Search 搜尋即時資訊 + Pydantic 結構化提取實戰
+- **實務整合**：
+  - `app_telegram_bot.py`：Telegram 即時聯網查證機器人
+  - `app_gradio.py`：Gradio 聯網搜尋與來源查核介面
+  - `app_streamlit.py`：Streamlit 即時情報與聯網搜尋儀表板
+  - `app_fastapi.py`：FastAPI 聯網即時搜尋 API 微服務
 
 ### 6. code_execution (程式碼執行)
-- `README.md`：程式碼執行完整教學（涵蓋數學運算、多輪對話、圖片縮放檢驗、CSV 數據計算、Matplotlib 圖表繪製與聯網整合）
-- `math_solver.py`：數學質數計算與程式碼執行歷程解析
-- `currency_calculator.py`：載入 CSV 匯率表並透過 Python 進行跨幣別換匯精確計算
-- `matplotlib_plotter.py`：Matplotlib 圖表動態生成並儲存 inline 圖片
-- `image_zoom_inspection.py`：Gemini 3 圖片程式碼局部裁切縮放與視覺分析
-- `math_and_code_execution.ipynb`：程式碼執行基礎與 Chat 整合筆記本
-- `currency_calculator.ipynb`：牌告匯率 CSV 程式碼計算筆記本
-- `2025_01_29.csv`：匯率範例資料檔
+- `README.md`：程式碼執行與沙盒運算教學
+- **核心教學**：
+  - `01_math_solver.py`：數學質數計算與程式碼執行歷程
+  - `02_currency_calculator.py`：載入 CSV 匯率表透過 Python 進行跨幣別換匯計算
+  - `03_matplotlib_plotter.py`：Matplotlib 圖表動態生成並輸出
+  - `04_image_zoom_inspection.py`：Gemini 3 圖片程式碼局部裁切縮放與視覺檢測
+  - `math_and_code_execution.ipynb`：程式碼執行基礎與 Chat 整合筆記本
+  - `currency_calculator.ipynb`：牌告匯率 CSV 程式碼計算筆記本
+  - `2025_01_29.csv`：匯率範例資料檔
+- **實務整合**：
+  - `app_telegram_bot.py`：Telegram Python 運算解題機器人
+  - `app_gradio.py`：Gradio Python 運算與繪圖沙盒工作台
+  - `app_streamlit.py`：Streamlit Python 數據演算與圖表工作台
+  - `app_fastapi.py`：FastAPI 程式碼沙盒運算 API 微服務
 
 ### 7. function_calling (函式呼叫)
-- `README.md`：函式呼叫完整教學（涵蓋 4 步驟標準流程、平行呼叫、組合式決策、模式控制、聯網混合與多模態回傳）
-- `meeting_scheduler.py`：會議排程動作執行範例（Interactions API 4 步驟）
-- `weather_assistant.py`：即時天氣知識查詢與解析範例
-- `parallel_function_calling.py`：多設備平行函式呼叫與批量結果回傳範例
-- `multi_tool_search_and_function.py`：Google Search 聯網搜尋與自訂 Function Calling 混合使用範例
-- `basic_function_calling.ipynb`：基礎函式呼叫互動筆記本
-- `multi_function_calling.ipynb`：多函式自動路由與執行
-- `chat_function_history.ipynb`：多輪對話歷史紀錄與函式呼叫
-- `manual_function_calling.ipynb`：手動解析 Function Call 與執行回傳
-- `function_calling_chain.ipynb`：多步驟鏈式函式呼叫工作流
-- `parallel_function_calling.ipynb`：平行函式呼叫筆記本
-- `extract_structured_data.ipynb`：透過 Function Calling 提取結構化資料
-- `example1/`：臺灣銀行牌告匯率自動呼叫範例
-- `example2/`：臺灣銀行牌告匯率手動呼叫範例
-- `gradio_example1/`：Gradio 互動式介面整合範例
+- `README.md`：函式呼叫與工具自動路由教學
+- **核心教學**：
+  - `01_meeting_scheduler.py`：會議排程動作執行範例（標準 4 步驟）
+  - `02_weather_assistant.py`：即時天氣查詢與解析範例
+  - `03_parallel_function_calling.py`：多設備平行函式呼叫與批量結果回傳
+  - `04_multi_tool_search_and_function.py`：Google Search 聯網搜尋與自訂工具混合使用
+  - `basic_function_calling.ipynb`：基礎函式呼叫互動筆記本
+  - `multi_function_calling.ipynb`：多函式自動路由筆記本
+  - `parallel_function_calling.ipynb`：平行函式呼叫筆記本
+  - `chat_function_history.ipynb`：對話歷史與函式呼叫整合
+- **實務整合**：
+  - `app_telegram_bot.py`：Telegram 智慧助理與函式呼叫機器人
+  - `app_gradio.py`：Gradio 智慧家庭與工具調用控制台
+  - `app_streamlit.py`：Streamlit AI 智慧管家工具儀表板
+  - `app_fastapi.py`：FastAPI 函式呼叫與工具執行 API 微服務
 
 ### 8. embeddings/document_search (向量檢索)
-- `README.md`：向量嵌入與語意搜尋教學（涵蓋 gemini-embedding-001/002、MRL 維度縮減、Task Types、多語 E5 與 ChromaDB 整合）
-- `gemini_semantic_similarity.py`：Gemini 文本向量相似度計算與矩陣生成
-- `gemini_document_retrieval.py`：非對稱知識庫語意檢索 (Top-K) 排序
-- `dimension_reduction.py`：Matryoshka 向量維度縮減 (3072 ➔ 768) 示範
-- `document-search-e5.py`：Multilingual-E5 開源繁體中文向量搜尋腳本
-- `gemini_embedding_tutorial.ipynb`：Gemini Embedding 基礎教學筆記本
-- `csv_semantic_search.ipynb`：CSV 文件向量搜尋筆記本
-- `multilingual_e5_test.ipynb`：Multilingual-E5 繁中測試筆記本
-- `multilingual_e5_advanced.ipynb`：Multilingual-E5 進階筆記本
-- `embedding_benchmark.ipynb`：向量模型評測筆記本
-- `pretrain_and_query/`：CSV + pkl 預先向量化與快速查詢
-- `pretrain_query_chromaDb/`：ChromaDB 向量資料庫實戰範例
-- `001.csv`：說明文件範例資料
-- `Embeddings模型評測.xlsx`：繁體中文各家 Embedding 效果評測表
+- `README.md`：向量嵌入與語意搜尋教學
+- **核心教學**：
+  - `01_gemini_semantic_similarity.py`：文本向量相似度計算
+  - `02_gemini_document_retrieval.py`：非對稱知識庫語意檢索 (Top-K)
+  - `03_dimension_reduction.py`：Matryoshka 向量維度縮減 (3072 ➔ 768)
+  - `04_document_search_e5.py`：Multilingual-E5 開源繁體中文向量搜尋
+  - `gemini_embedding_tutorial.ipynb`：Gemini Embedding 基礎教學筆記本
+  - `csv_semantic_search.ipynb`：CSV 文件向量搜尋筆記本
+  - `001.csv`：說明文件範例資料
+  - `Embeddings模型評測.xlsx`：繁體中文各家 Embedding 效果評測表
+- **實務整合**：
+  - `app_telegram_bot.py`：Telegram 企業知識庫 RAG 檢索機器人
+  - `app_gradio.py`：Gradio 語意相似度與知識庫搜尋工作台
+  - `app_streamlit.py`：Streamlit 語意檢索與知識庫問答儀表板
+  - `app_fastapi.py`：FastAPI 向量嵌入與語意相似度 API 微服務
 
 ### 9. 何謂AIAgent (AI Agent 觀念)
 - `README.md`：工作流類型（Prompt chaining、Routing、Parallelization 等）、Agent 概念與參考影片
