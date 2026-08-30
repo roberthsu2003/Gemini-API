@@ -6,9 +6,10 @@ python-dotenv
 jupyterlab-lsp
 basedpyright
 
-# ========== 介面與網頁 ==========
+# ========== 介面與網頁 / 通訊機器人 ==========
 gradio
 streamlit
+python-telegram-bot
 
 # ========== 資料與表格 ==========
 pandas
