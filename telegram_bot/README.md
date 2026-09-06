@@ -238,20 +238,28 @@ python telegram_bot/gemini_group_bot.py
 
 ---
 
-### 範例 4：Bot 主動發送訊息至群組（推播 / 廣播）(`send_group_message.py`)
+### 範例 4：Bot 主動推播訊息（支援個人、群組與頻道）(`send_group_message.py`)
 
-主動發送訊息不需要等待群友先說話，適用於：**系統告警、定時排程、每日晨報、Gemini 自動推播**。
+主動推播不需要等待使用者先提問，適用於：**系統告警、定時通知、每日晨報、Gemini 自動推播**。
 
-#### 第一步：取得群組的 `Chat ID`
-群組的 Chat ID 通常為**負整數**（例如 `-1001234567890`）。
-取得方法很簡單：
-1. 將 Bot 加入群組後，在群組發送任意一則文字訊息（如 `test`）。
-2. 在瀏覽器開啟：`https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates`
-3. 在回傳的 JSON 中找到 `"chat":{"id": -100xxxxxxx, "title": "你的群組名稱"}`，這組數字就是群組 Chat ID。
+#### 📌 三種推播對象的前置條件與 ID 格式
 
-#### 第二步：主動發送程式碼
+| 推播對象 | 必備前置條件 | ID 格式範例 |
+| :--- | :--- | :--- |
+| **👤 個人 (User)** | 該用戶必須曾主動私訊過 Bot（至少點擊過一次 `/start`） | 正整數，如 `123456789` |
+| **👥 群組 (Group)** | Bot 必須已加入該群組 | 負整數（通常帶有 `-100` 前綴），如 `-1001234567890` |
+| **📢 頻道 (Channel)** | **必須將 Bot 設為該頻道的「管理員 (Admin)」**，且開啟發文權限 | 公開頻道填 `@channel_username`<br>私密頻道填負整數 ID（如 `-1009876543210`） |
 
-使用 Telegram 提供的 `Bot` 物件呼叫 `send_message()` 即可直接發送：
+> 🔍 **如何取得 Chat ID？**
+> 1. 個人/群組/頻道發送任意訊息後，在瀏覽器打開：
+>    `https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates`
+> 2. 在 JSON 內容中即可找到對應的 `"chat":{"id": ...}`。
+
+---
+
+#### 程式碼範例
+
+使用 `telegram.Bot` 的 `send_message()`，傳入對應的 `chat_id` 即可發送給不同目標：
 
 ```python
 import asyncio
@@ -261,25 +269,39 @@ from telegram import Bot
 
 load_dotenv()
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-# 替換為你的群組 Chat ID（注意負號）
-GROUP_CHAT_ID = "-1001234567890"
+
+# 設定不同推播目標
+TARGET_USER_ID = 123456789                # 個人 (正整數，用戶需先私訊過 Bot)
+TARGET_GROUP_ID = "-1001234567890"         # 群組 (負整數，Bot 需在群組內)
+TARGET_CHANNEL = "@my_public_channel"      # 頻道 (公開填 @帳號，Bot 需為管理員)
+
+async def send_broadcast(chat_id: str | int, message: str):
+    bot = Bot(token=TELEGRAM_TOKEN)
+    try:
+        await bot.send_message(chat_id=chat_id, text=message)
+        print(f"✅ 成功發送至：{chat_id}")
+    except Exception as e:
+        print(f"❌ 發送至 {chat_id} 失敗：{e}")
 
 async def main():
-    bot = Bot(token=TELEGRAM_TOKEN)
-    
-    # 主動發送文字訊息給群組
-    await bot.send_message(
-        chat_id=GROUP_CHAT_ID,
-        text="📢 大家好！這是來自機器人的主動推播通知。"
-    )
-    print("✅ 訊息發送成功！")
+    text = "📢 大家好！這是來自 Telegram Bot 的跨平台主動推播通知。"
+
+    # 可同時推送給多個目標
+    targets = [
+        # TARGET_USER_ID,
+        # TARGET_GROUP_ID,
+        # TARGET_CHANNEL,
+    ]
+
+    for chat_id in targets:
+        await send_broadcast(chat_id, text)
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-> 💡 **進階結合 Gemini 每日自動推播**：
-> 先由 Gemini 生成內容後，再傳入 `bot.send_message(chat_id=GROUP_CHAT_ID, text=ai_text)`，即可打造全自動的 AI 晨報機器人！
+> 💡 **進階結合 Gemini 自動生成推播內容**：
+> 先調用 Gemini 產生問候語或重點摘要，再呼叫 `await bot.send_message(chat_id=..., text=ai_text)`，即可打造全自動的 AI 晨報推播機器人！
 
 執行方式：
 ```bash

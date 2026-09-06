@@ -1,6 +1,9 @@
 """
-Telegram 群組主動推播訊息範例 (Broadcast / Push Notification)
-功能：無需等群友發話，由程式主動向指定群組發送推播訊息或 Gemini 生成的內容
+Telegram 主動推播訊息範例 (Broadcast / Push Notification)
+支援目標：
+1. 個人 (User ID - 正整數)
+2. 群組 (Group Chat ID - 負整數)
+3. 頻道 (Channel - @公開名稱 或 -100開頭的私密ID)
 """
 
 import asyncio
@@ -13,40 +16,30 @@ load_dotenv()
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# 請替換為您的群組 Chat ID (群組 ID 通常是負整數，例如 -1001234567890 或 -987654321)
-# 可以在群組發送任何訊息後，執行本檔案的 get_recent_chat_ids() 查詢
+# ==============================================================================
+# 推播目標設定 (可填寫單一目標或多個目標)
+# ==============================================================================
+# 1. 個人 (User ID)：正整數，對方必須曾私訊過 Bot (至少點過 /start)
+USER_CHAT_ID = os.environ.get("TELEGRAM_USER_CHAT_ID", "123456789")
+
+# 2. 群組 (Group ID)：負整數 (通常是 - 或 -100 開頭)，Bot 需先加入群組
 GROUP_CHAT_ID = os.environ.get("TELEGRAM_GROUP_CHAT_ID", "-1001234567890")
 
+# 3. 頻道 (Channel)：
+#    - 公開頻道：直接填寫頻道帳號 "@channel_username"
+#    - 私密頻道：填寫以 -100 開頭的 Chat ID
+#    - ⚠️ 注意：Bot 必須被加入頻道，並設為「管理員 (Admin)」具備發布訊息權限！
+CHANNEL_CHAT_ID = os.environ.get("TELEGRAM_CHANNEL_CHAT_ID", "@your_channel_username")
 
-async def get_recent_chat_ids():
-    """輔助工具：查詢 Bot 最近收到的群組與對話 ID"""
+
+async def broadcast_message(chat_id: str | int, text: str):
+    """發送訊息至指定對象 (個人、群組或頻道)"""
     bot = Bot(token=TELEGRAM_TOKEN)
-    updates = await bot.get_updates()
-    print("🔍 最近收到的對話清單：")
-    for u in updates:
-        if u.effective_chat:
-            chat = u.effective_chat
-            print(f"👉 類型: {chat.type:10} | ID: {chat.id:<15} | 名稱: {chat.title or chat.first_name}")
-
-
-async def send_text_to_group(text: str):
-    """主動發送文字訊息至群組"""
-    bot = Bot(token=TELEGRAM_TOKEN)
-    message = await bot.send_message(chat_id=GROUP_CHAT_ID, text=text)
-    print(f"✅ 訊息已發送至群組 (Message ID: {message.message_id})")
-
-
-async def send_gemini_daily_to_group():
-    """主動讓 Gemini 生成內容（如每日問候、重點摘要）並推播至群組"""
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    response = client.interactions.create(
-        model="gemini-3.7-flash",
-        input="請給群組成員寫一段簡短、元氣滿滿的今日問候與一句科技勵志名言。",
-        system_instruction="你是一個活潑親切的社群助理。"
-    )
-
-    ai_text = response.output_text or "早安大家！祝今天一切順利！"
-    await send_text_to_group(f"📢 **AI 晨間推播**\n\n{ai_text}")
+    try:
+        msg = await bot.send_message(chat_id=chat_id, text=text)
+        print(f"✅ 成功發送至 [{chat_id}] (Message ID: {msg.message_id})")
+    except Exception as e:
+        print(f"❌ 發送至 [{chat_id}] 失敗：{e}")
 
 
 async def main():
@@ -54,16 +47,23 @@ async def main():
         print("❌ 請先在 .env 設定 TELEGRAM_BOT_TOKEN")
         return
 
-    # 若尚未知道群組 ID，可先執行此行查詢：
-    # await get_recent_chat_ids()
+    # 推播內容（也可以串接 Gemini 生成）
+    notification_text = "📢 大家好！這是來自機器人的全方位主動推播通知。"
 
-    print("🚀 正在主動向群組發送訊息...")
-    # 方式 1：發送自訂文字通知
-    await send_text_to_group("📢 大家好！這是來自 Bot 的主動廣播通知。")
+    # 目標清單：可同時推播給個人、群組與頻道
+    targets = [
+        # USER_CHAT_ID,      # 個人
+        # GROUP_CHAT_ID,     # 群組
+        # CHANNEL_CHAT_ID,   # 頻道
+    ]
 
-    # 方式 2：結合 Gemini 自動生成推播
-    # if GEMINI_API_KEY:
-    #     await send_gemini_daily_to_group()
+    print("🚀 開始執行主動推播...")
+    if not targets:
+        print("💡 請在程式中取消註解 targets 清單，或替換為您真實的 Chat ID / 頻道名稱！")
+        return
+
+    for target in targets:
+        await broadcast_message(target, notification_text)
 
 
 if __name__ == "__main__":
