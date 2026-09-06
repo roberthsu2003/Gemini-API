@@ -21,10 +21,13 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """歡迎訊息"""
+    bot_info = await context.bot.get_me()
+    bot_username = bot_info.username
+
     if update.effective_chat.type == ChatType.PRIVATE:
         text = "👋 你好！我是 Gemini AI 助理，直接傳訊息向我提問即可！"
     else:
-        text = f"👋 大家好！在群組中請 @{context.bot.username} 或回覆我的訊息，我就會為大家解答！"
+        text = f"👋 大家好！在群組中請 @{bot_username} 或回覆我的訊息，我就會為大家解答！"
     await update.message.reply_text(text)
 
 
@@ -35,45 +38,61 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     raw_text = update.message.text
     chat_type = update.effective_chat.type
-    bot_username = context.bot.username
+
+    # 確保取得 Bot 的真實 Username (避免 context.bot.username 為 None)
+    bot_info = await context.bot.get_me()
+    bot_username = bot_info.username or ""
 
     is_private = chat_type == ChatType.PRIVATE
-    is_mentioned = bot_username and f"@{bot_username.lower()}" in raw_text.lower()
-    is_reply_to_bot = (
+    # 檢查文字中是否包含 @botusername (不分大小寫)
+    is_mentioned = bool(bot_username and f"@{bot_username.lower()}" in raw_text.lower())
+    # 檢查是否為回覆 Bot 的訊息
+    is_reply_to_bot = bool(
         update.message.reply_to_message
         and update.message.reply_to_message.from_user
-        and update.message.reply_to_message.from_user.id == context.bot.id
+        and update.message.reply_to_message.from_user.id == bot_info.id
     )
 
-    # 群組中若未被 @ 或未被回覆，則略過（避免洗版）
+    print(f"收到訊息: '{raw_text}' | 來源: {chat_type} | Mention: {is_mentioned} | Reply: {is_reply_to_bot}")
+
+    # 群組中若未被 @ 也未被回覆，則略過（避免洗版）
     if not is_private and not is_mentioned and not is_reply_to_bot:
         return
 
     # 去除訊息中的 @BotUsername 留下提問內容
-    clean_text = raw_text.replace(f"@{bot_username}", "").strip()
+    clean_text = raw_text.lower().replace(f"@{bot_username.lower()}", "").strip()
     if not clean_text:
-        await update.message.reply_text("請問有什麼我可以為您服務的？")
+        await update.message.reply_text("請問有什麼我可以為您服務的？", reply_to_message_id=update.message.message_id)
         return
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
-    # 呼叫 Gemini 3.7 Flash
-    interaction = client.interactions.create(
-        model="gemini-3.7-flash",
-        input=clean_text,
-        system_instruction="你是一個繁體中文的 Telegram 群組智慧助理，請用繁體中文給出清晰、條理分明的回答。"
-    )
+    try:
+        # 呼叫 Gemini 3.7 Flash
+        interaction = client.interactions.create(
+            model="gemini-3.7-flash",
+            input=clean_text,
+            system_instruction="你是一個 Telegram 群組智慧助理，請用繁體中文給出清晰、簡潔、條理分明的回答。"
+        )
 
-    reply_text = interaction.output_text or "抱歉，目前無法生成回應。"
-    await update.message.reply_text(reply_text, reply_to_message_id=update.message.message_id)
+        reply_text = interaction.output_text or "抱歉，目前無法生成回應。"
+        await update.message.reply_text(reply_text, reply_to_message_id=update.message.message_id)
+
+    except Exception as e:
+        print(f"Gemini API 錯誤: {e}")
+        await update.message.reply_text(f"發生錯誤：{e}", reply_to_message_id=update.message.message_id)
 
 
 def main():
+    if not TELEGRAM_TOKEN or not GEMINI_API_KEY:
+        print("❌ 請先確認 .env 中的 TELEGRAM_BOT_TOKEN 與 GEMINI_API_KEY")
+        return
+
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    print("🚀 Gemini 群組 Telegram Bot 運行中...")
+    print("🚀 Gemini 群組 Telegram Bot 運行中 (Polling 模式)...")
     app.run_polling()
 
 

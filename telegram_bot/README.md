@@ -138,7 +138,16 @@ python telegram_bot/gemini_bot.py
 
 ### 範例 3：加入群組 (Group) 的 AI 助理 (`gemini_group_bot.py`)
 
-當 Bot 加入群組後，最理想的互動方式是 **「群友在訊息中 `@機器人` 或『回覆 (Reply)』機器人的訊息」** 時才觸發 Gemini，避免群聊日常洗版：
+#### ⚠️ 群組前置設定：關閉 Group Privacy（必要步驟）
+Telegram 預設會開啟 **Group Privacy（預設為 ON）**，這會限制 Bot 接收群組訊息，導致 `@機器人` 時沒有任何反應。因此加入群組前或加入後，**必須先將 Group Privacy 關閉 (Turn off)**：
+
+1. 開啟 Telegram，私訊 **[@BotFather](https://t.me/BotFather)** 並輸入 `/mybots`。
+2. 選擇你的機器人（例如 `@my_gemini_demo_bot`）。
+3. 依序點擊：**Bot Settings** ➡️ **Group Privacy** ➡️ **Turn off**。
+4. 看到 BotFather 回覆 `Privacy mode is disabled` 即代表成功關閉。
+5. ⚠️ **注意**：若 Bot **已經加入群組**，修改設定後**必須先將 Bot 退出/踢出群組，再重新加入群組一次**，設定才會正式在群組中生效！
+
+> 💡 **運作方式**：在程式端我們設定為 **「群友在訊息中 `@機器人` 或『回覆 (Reply)』機器人的訊息」** 時才觸發 Gemini，既能正常回覆，又避免在群聊日常時洗版。
 
 ```python
 import os
@@ -155,10 +164,11 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    bot_info = await context.bot.get_me()
     if update.effective_chat.type == ChatType.PRIVATE:
         await update.message.reply_text("👋 你好！直接發送訊息即可與我對話。")
     else:
-        await update.message.reply_text(f"👋 大家好！在群組中請 @{context.bot.username} 或回覆我的訊息來提問。")
+        await update.message.reply_text(f"👋 大家好！在群組中請 @{bot_info.username} 或回覆我的訊息來提問。")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
@@ -166,22 +176,25 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     raw_text = update.message.text
     chat_type = update.effective_chat.type
-    bot_name = context.bot.username
+
+    # 確保取得 Bot 的真實 Username (避免 context.bot.username 為 None)
+    bot_info = await context.bot.get_me()
+    bot_name = bot_info.username or ""
 
     is_private = chat_type == ChatType.PRIVATE
-    is_mentioned = bot_name and f"@{bot_name.lower()}" in raw_text.lower()
-    is_reply_to_bot = (
+    is_mentioned = bool(bot_name and f"@{bot_name.lower()}" in raw_text.lower())
+    is_reply_to_bot = bool(
         update.message.reply_to_message
         and update.message.reply_to_message.from_user
-        and update.message.reply_to_message.from_user.id == context.bot.id
+        and update.message.reply_to_message.from_user.id == bot_info.id
     )
 
-    # 非私聊且沒有 @機器人 也沒有回覆機器人時，直接略過
+    # 非私聊且沒有 @機器人 也沒有回覆機器人時，直接略過（避免洗版）
     if not is_private and not is_mentioned and not is_reply_to_bot:
         return
 
     # 去除 @BotUsername，留下純問題文字
-    clean_text = raw_text.replace(f"@{bot_name}", "").strip()
+    clean_text = raw_text.lower().replace(f"@{bot_name.lower()}", "").strip()
     if not clean_text:
         return
 
@@ -217,8 +230,11 @@ if __name__ == "__main__":
 python telegram_bot/gemini_group_bot.py
 ```
 
-> 💡 **群組小提示**：
-> Telegram 預設開啟隱私模式（Privacy Mode），Bot 在群組中只會接收被 `@`、被「回覆」或以 `/` 開頭的指令，這正好符合上述設計，不需要特地去 BotFather 關閉隱私設定。
+> ⚠️ **群組中 `@bot` 沒反應的常見原因與解法**：
+> 1. **程式端 `context.bot.username` 為 `None`**：在 `python-telegram-bot` v20+ 中，若未調用 `await context.bot.get_me()`，機器人帳號可能未載入導致判定失敗（本範例已修正此問題）。
+> 2. **Telegram 隱私模式 (Group Privacy)**：
+>    - **方法一（最推薦）**：在群組內直接把 Bot **設為管理員 (Admin)**，Bot 便能即時接收所有訊息與 @提及。
+>    - **方法二**：私訊 `@BotFather` 輸入 `/mybots` ➡️ 選擇你的 Bot ➡️ **Bot Settings** ➡️ **Group Privacy** ➡️ 點選 **Turn off**。**注意：設定完成後，必須將 Bot 退出群組並重新拉進群組**，設定才會生效！
 
 ---
 
