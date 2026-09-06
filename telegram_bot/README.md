@@ -238,6 +238,56 @@ python telegram_bot/gemini_group_bot.py
 
 ---
 
+### 範例 4：Bot 主動發送訊息至群組（推播 / 廣播）(`send_group_message.py`)
+
+主動發送訊息不需要等待群友先說話，適用於：**系統告警、定時排程、每日晨報、Gemini 自動推播**。
+
+#### 第一步：取得群組的 `Chat ID`
+群組的 Chat ID 通常為**負整數**（例如 `-1001234567890`）。
+取得方法很簡單：
+1. 將 Bot 加入群組後，在群組發送任意一則文字訊息（如 `test`）。
+2. 在瀏覽器開啟：`https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates`
+3. 在回傳的 JSON 中找到 `"chat":{"id": -100xxxxxxx, "title": "你的群組名稱"}`，這組數字就是群組 Chat ID。
+
+#### 第二步：主動發送程式碼
+
+使用 Telegram 提供的 `Bot` 物件呼叫 `send_message()` 即可直接發送：
+
+```python
+import asyncio
+import os
+from dotenv import load_dotenv
+from telegram import Bot
+
+load_dotenv()
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+# 替換為你的群組 Chat ID（注意負號）
+GROUP_CHAT_ID = "-1001234567890"
+
+async def main():
+    bot = Bot(token=TELEGRAM_TOKEN)
+    
+    # 主動發送文字訊息給群組
+    await bot.send_message(
+        chat_id=GROUP_CHAT_ID,
+        text="📢 大家好！這是來自機器人的主動推播通知。"
+    )
+    print("✅ 訊息發送成功！")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+> 💡 **進階結合 Gemini 每日自動推播**：
+> 先由 Gemini 生成內容後，再傳入 `bot.send_message(chat_id=GROUP_CHAT_ID, text=ai_text)`，即可打造全自動的 AI 晨報機器人！
+
+執行方式：
+```bash
+python telegram_bot/send_group_message.py
+```
+
+---
+
 ## 💡 常見開發優勢與考量
 
 ### 優勢
